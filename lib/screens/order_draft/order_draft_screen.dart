@@ -1,110 +1,151 @@
 import 'package:flutter/material.dart';
-import '../../core/cart_manager.dart';
-import '../../models/cart_item_model.dart';
+import '../../services/order_draft_service.dart';
+import '../../models/order_item_model.dart';
 
-class OrderDraftScreen extends StatelessWidget {
+class OrderDraftScreen extends StatefulWidget {
   const OrderDraftScreen({super.key});
 
   @override
+  State<OrderDraftScreen> createState() => _OrderDraftScreenState();
+}
+
+class _OrderDraftScreenState extends State<OrderDraftScreen> {
+  @override
   Widget build(BuildContext context) {
+    final List<OrderItemModel> items = OrderDraftService.items;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F1218),
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF161A22),
         elevation: 0,
-        title: const Text("Your Cart"),
+        title: const Text("My Cart"),
         centerTitle: true,
       ),
 
-      body: ValueListenableBuilder(
-        valueListenable: CartManager.cartCount,
-        builder: (context, _, __) {
-          final items = CartManager.items;
+      body: items.isEmpty
+          ? const Center(
+        child: Text(
+          "Your cart is empty",
+          style: TextStyle(color: Colors.white70),
+        ),
+      )
+          : Column(
+        children: [
+          /// ITEM LIST
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return _CartItemTile(
+                  item: item,
+                  onChanged: () => setState(() {}),
+                );
+              },
+            ),
+          ),
 
-          /// 🟡 EMPTY CART
-          if (items.isEmpty) {
-            return const Center(
-              child: Text(
-                "Your cart is empty",
-                style: TextStyle(color: Colors.white70),
-              ),
-            );
-          }
-
-          /// 🟢 CART LIST
-          return Column(
-            children: [
-
-              /// ITEM LIST
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return _CartItemTile(item: item);
-                  },
+          /// TOTAL + CHECKOUT
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF161A22),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Total",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    Text(
+                      "₹${OrderDraftService.totalAmount.toStringAsFixed(0)}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-
-              /// TOTAL + CHECKOUT
-              _CheckoutSection(),
-            ],
-          );
-        },
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Checkout coming next…"),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E6CF6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text("Proceed to Checkout"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-/// 🧾 CART ITEM TILE
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// CART ITEM TILE
+///////////////////////////////////////////////////////////////////////////////
 
 class _CartItemTile extends StatelessWidget {
-  final CartItemModel item;
+  final OrderItemModel item;
+  final VoidCallback onChanged;
 
-  const _CartItemTile({required this.item});
+  const _CartItemTile({required this.item, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF161A22),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
-
       child: Row(
         children: [
-
-          /// PRODUCT IMAGE
+          /// IMAGE
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
             child: Image.asset(
               item.image,
-              width: 60,
-              height: 60,
+              width: 50,
+              height: 50,
               fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+              const Icon(Icons.image_not_supported, color: Colors.white38),
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
 
           /// NAME + PRICE
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(item.name, style: const TextStyle(color: Colors.white)),
                 const SizedBox(height: 4),
                 Text(
                   "₹${item.price.toStringAsFixed(0)}",
@@ -117,115 +158,26 @@ class _CartItemTile extends StatelessWidget {
           /// QUANTITY CONTROLS
           Row(
             children: [
-
-              _qtyButton(Icons.remove, () {
-                if (item.quantity > 1) {
-                  CartManager.updateQuantity(item.productId, item.quantity - 1);
-                } else {
-                  CartManager.removeFromCart(item.productId);
-                }
-              }),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  item.quantity.toString(),
-                  style: const TextStyle(color: Colors.white),
-                ),
+              IconButton(
+                icon: const Icon(Icons.remove, color: Colors.white),
+                onPressed: () {
+                  if (item.quantity > 1) {
+                    OrderDraftService.updateQuantity(item.id, item.quantity - 1);
+                  } else {
+                    OrderDraftService.removeItem(item.id);
+                  }
+                  onChanged();
+                },
               ),
-
-              _qtyButton(Icons.add, () {
-                CartManager.updateQuantity(item.productId, item.quantity + 1);
-              }),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _qtyButton(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2E6CF6),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, size: 16, color: Colors.white),
-      ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////////////////
-/// 💳 CHECKOUT SECTION
-////////////////////////////////////////////////////////////////////////
-
-class _CheckoutSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final total = CartManager.totalAmount;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: const BoxDecoration(
-        color: Color(0xFF161A22),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-
-          /// TOTAL ROW
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Total Amount",
-                style: TextStyle(color: Colors.white70),
-              ),
-              Text(
-                "₹${total.toStringAsFixed(0)}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Text("${item.quantity}", style: const TextStyle(color: Colors.white)),
+              IconButton(
+                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  OrderDraftService.updateQuantity(item.id, item.quantity + 1);
+                  onChanged();
+                },
               ),
             ],
-          ),
-
-          const SizedBox(height: 14),
-
-          /// CHECKOUT BUTTON
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Checkout flow coming next"),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E6CF6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                "Proceed to Checkout",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
           ),
         ],
       ),
