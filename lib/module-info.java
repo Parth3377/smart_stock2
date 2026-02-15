@@ -1,0 +1,2 @@
+module smart.stock2 {
+}
