@@ -87,11 +87,11 @@ class _SplashScreenState extends State<SplashScreen>
 
                 /// Glass-industrial system card
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161A22).withOpacity(0.85),
+                  color: const Color(0xFF161A22).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.45),
+                      color: Colors.black.withValues(alpha: 0.45),
                       blurRadius: 30,
                       offset: const Offset(0, 20),
                     ),

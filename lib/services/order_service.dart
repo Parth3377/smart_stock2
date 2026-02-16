@@ -15,7 +15,7 @@ class OrderService {
         OrderItemModel(
           name: "Security Labels",
           image: "assets/products/label1.png",
-          quantity: 2,
+          quantity: 2, id: '', price: 250,
         ),
       ],
     ),
@@ -31,7 +31,7 @@ class OrderService {
         OrderItemModel(
           name: "Hologram Stickers",
           image: "assets/products/hologram.png",
-          quantity: 3,
+          quantity: 3, id: '', price: 360,
         ),
       ],
     ),

@@ -2,13 +2,38 @@ import 'package:flutter/material.dart';
 import '../../models/product_model.dart';
 import '../../services/product_service.dart';
 
-class ProductsScreen extends StatelessWidget {
+class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<ProductModel> products = ProductService.getProducts();
+  State<ProductsScreen> createState() => _ProductsScreenState();
+}
 
+class _ProductsScreenState extends State<ProductsScreen> {
+  final List<ProductModel> _allProducts = ProductService.getProducts();
+
+  String _search = "";
+  String _selectedCategory = "All";
+
+  List<String> get _categories {
+    final set = _allProducts.map((e) => e.category).toSet().toList();
+    return ["All", ...set];
+  }
+
+  List<ProductModel> get _filteredProducts {
+    return _allProducts.where((product) {
+      final matchesSearch =
+      product.name.toLowerCase().contains(_search.toLowerCase());
+
+      final matchesCategory =
+          _selectedCategory == "All" || product.category == _selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F1218),
 
@@ -19,31 +44,98 @@ class ProductsScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: products.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.75,
-        ),
-        itemBuilder: (context, index) {
-          return _ProductCard(product: products[index]);
-        },
+      body: Column(
+        children: [
+          // 🔍 SEARCH BAR
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: (value) => setState(() => _search = value),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Search products...",
+                hintStyle: const TextStyle(color: Color(0xFFA1A6B3)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFFA1A6B3)),
+                filled: true,
+                fillColor: const Color(0xFF161A22),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+
+          // 🏷 CATEGORY FILTER
+          SizedBox(
+            height: 40,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (_, i) {
+                final category = _categories[i];
+                final selected = category == _selectedCategory;
+
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = category),
+                  child: Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFF2E6CF6)
+                          : const Color(0xFF161A22),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        color: selected ? Colors.white : Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemCount: _categories.length,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 🧱 PRODUCTS GRID
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filteredProducts.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.75,
+              ),
+              itemBuilder: (_, index) {
+                final product = _filteredProducts[index];
+                return _ProductTile(product: product);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// PRODUCT CARD
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+/// PRODUCT TILE
+///////////////////////////////////////////////////////////////////////////
 
-class _ProductCard extends StatelessWidget {
+class _ProductTile extends StatelessWidget {
   final ProductModel product;
 
-  const _ProductCard({required this.product});
+  const _ProductTile({required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -64,26 +156,25 @@ class _ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// IMAGE
+          // 🖼 IMAGE
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
                 product.image,
-                fit: BoxFit.cover,
                 width: double.infinity,
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(Icons.image_not_supported, color: Colors.white38),
-                ),
+                fit: BoxFit.cover,
               ),
             ),
           ),
 
           const SizedBox(height: 10),
 
-          /// NAME
+          // 📦 NAME
           Text(
             product.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -93,7 +184,7 @@ class _ProductCard extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          /// PRICE
+          // 💰 PRICE
           Text(
             "₹${product.price.toStringAsFixed(0)}",
             style: const TextStyle(
@@ -103,12 +194,12 @@ class _ProductCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          /// ADD BUTTON
+          // ➕ ADD TO CART
           SizedBox(
             width: double.infinity,
-            height: 36,
+            height: 34,
             child: ElevatedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +213,7 @@ class _ProductCard extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                "Add to Cart",
+                "Add",
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),

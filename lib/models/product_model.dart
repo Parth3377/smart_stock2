@@ -4,6 +4,7 @@ class ProductModel {
   final String image;
   final double price;
   final String description;
+  final String category;
 
   ProductModel({
     required this.id,
@@ -11,9 +12,10 @@ class ProductModel {
     required this.image,
     required this.price,
     required this.description,
+    required this.category,
   });
 
-  /// Convert Firebase/JSON → ProductModel (future use)
+  /// Firebase/JSON → ProductModel
   factory ProductModel.fromMap(Map<String, dynamic> map, String id) {
     return ProductModel(
       id: id,
@@ -21,16 +23,18 @@ class ProductModel {
       image: map['image'] ?? '',
       price: (map['price'] ?? 0).toDouble(),
       description: map['description'] ?? '',
+      category: map['category'] ?? 'General', // ✅ FIXED
     );
   }
 
-  /// Convert ProductModel → Map (for Firebase later)
+  /// ProductModel → Firebase Map
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'image': image,
       'price': price,
       'description': description,
+      'category': category, // ✅ IMPORTANT
     };
   }
 }

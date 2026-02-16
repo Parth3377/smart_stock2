@@ -1,41 +1,40 @@
-import '../models/order_item_model.dart';
+import '../models/product_model.dart';
+
+class OrderDraftItem {
+  final ProductModel product;
+  int quantity;
+
+  OrderDraftItem({
+    required this.product,
+    this.quantity = 1,
+  });
+
+  double get total => product.price * quantity;
+}
 
 class OrderDraftService {
-  static final List<OrderItemModel> _items = [];
+  /// cart storage
+  static final List<OrderDraftItem> _items = [];
 
-  /// Get all cart items
-  static List<OrderItemModel> get items => _items;
+  /// expose items
+  static List<OrderDraftItem> get items => _items;
 
-  /// Add product to cart
-  static void addItem(OrderItemModel item) {
-    final index = _items.indexWhere((e) => e.id == item.id);
+  /// total price
+  static double get totalPrice =>
+      _items.fold(0, (sum, item) => sum + item.total);
+
+  /// add product to cart
+  static void add(ProductModel product) {
+    final index = _items.indexWhere((e) => e.product.id == product.id);
 
     if (index != -1) {
       _items[index].quantity++;
     } else {
-      _items.add(item);
+      _items.add(OrderDraftItem(product: product));
     }
   }
 
-  /// Remove item
-  static void removeItem(String id) {
-    _items.removeWhere((e) => e.id == id);
-  }
-
-  /// Change quantity
-  static void updateQuantity(String id, int quantity) {
-    final index = _items.indexWhere((e) => e.id == id);
-    if (index != -1 && quantity > 0) {
-      _items[index].quantity = quantity;
-    }
-  }
-
-  /// Total price
-  static double get totalAmount {
-    return _items.fold(0, (sum, item) => sum + item.total);
-  }
-
-  /// Clear cart
+  /// clear cart
   static void clear() {
     _items.clear();
   }

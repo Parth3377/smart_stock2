@@ -26,6 +26,8 @@ class MyApp extends StatelessWidget {
         fontFamily: 'IBM Plex Sans',
       ),
 
+      themeMode: ThemeMode.dark, // ⭐ small improvement
+
       /// ⭐ ADVANCED ROUTING
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRoutes.onGenerateRoute,

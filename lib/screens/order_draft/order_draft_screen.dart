@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/order_draft_service.dart';
-import '../../models/order_item_model.dart';
+import '../../models/product_model.dart';
 
 class OrderDraftScreen extends StatefulWidget {
   const OrderDraftScreen({super.key});
@@ -10,21 +9,51 @@ class OrderDraftScreen extends StatefulWidget {
 }
 
 class _OrderDraftScreenState extends State<OrderDraftScreen> {
+  /// 🔹 Temporary local cart (later from provider / Firebase)
+  final List<_CartItem> _cart = [
+    _CartItem(
+      product: ProductModel(
+        id: "1",
+        name: "Security Labels",
+        description: "High quality security labels.",
+        image: "assets/products/label1.png",
+        price: 120,
+        category: "Labels",
+      ),
+      quantity: 2,
+    ),
+  ];
+
+  double get total =>
+      _cart.fold(0, (sum, item) => sum + item.product.price * item.quantity);
+
+  void _increaseQty(int index) {
+    setState(() => _cart[index].quantity++);
+  }
+
+  void _decreaseQty(int index) {
+    setState(() {
+      if (_cart[index].quantity > 1) {
+        _cart[index].quantity--;
+      } else {
+        _cart.removeAt(index);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<OrderItemModel> items = OrderDraftService.items;
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F1218),
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF161A22),
         elevation: 0,
-        title: const Text("My Cart"),
+        title: const Text("Order Draft"),
         centerTitle: true,
       ),
 
-      body: items.isEmpty
+      body: _cart.isEmpty
           ? const Center(
         child: Text(
           "Your cart is empty",
@@ -33,67 +62,54 @@ class _OrderDraftScreenState extends State<OrderDraftScreen> {
       )
           : Column(
         children: [
-          /// ITEM LIST
+          /// 🧾 CART LIST
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return _CartItemTile(
+              itemCount: _cart.length,
+              itemBuilder: (_, index) {
+                final item = _cart[index];
+                return _CartTile(
                   item: item,
-                  onChanged: () => setState(() {}),
+                  onAdd: () => _increaseQty(index),
+                  onRemove: () => _decreaseQty(index),
                 );
               },
             ),
           ),
 
-          /// TOTAL + CHECKOUT
+          /// 💰 TOTAL + CHECKOUT
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
               color: Color(0xFF161A22),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Total",
-                      style: TextStyle(color: Colors.white70),
+                Expanded(
+                  child: Text(
+                    "Total: ₹${total.toStringAsFixed(0)}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      "₹${OrderDraftService.totalAmount.toStringAsFixed(0)}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Checkout coming next…"),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E6CF6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text("Proceed to Checkout"),
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/checkout');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E6CF6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text("Checkout"),
                 ),
               ],
             ),
@@ -104,37 +120,40 @@ class _OrderDraftScreenState extends State<OrderDraftScreen> {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// CART ITEM TILE
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+/// CART TILE
+///////////////////////////////////////////////////////////////////////////
 
-class _CartItemTile extends StatelessWidget {
-  final OrderItemModel item;
-  final VoidCallback onChanged;
+class _CartTile extends StatelessWidget {
+  final _CartItem item;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
 
-  const _CartItemTile({required this.item, required this.onChanged});
+  const _CartTile({
+    required this.item,
+    required this.onAdd,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF161A22),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           /// IMAGE
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             child: Image.asset(
-              item.image,
-              width: 50,
-              height: 50,
+              item.product.image,
+              width: 60,
+              height: 60,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-              const Icon(Icons.image_not_supported, color: Colors.white38),
             ),
           ),
 
@@ -145,37 +164,33 @@ class _CartItemTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: const TextStyle(color: Colors.white)),
+                Text(
+                  item.product.name,
+                  style: const TextStyle(color: Colors.white),
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  "₹${item.price.toStringAsFixed(0)}",
-                  style: const TextStyle(color: Colors.white70),
+                  "₹${item.product.price.toStringAsFixed(0)}",
+                  style: const TextStyle(color: Color(0xFF2E6CF6)),
                 ),
               ],
             ),
           ),
 
-          /// QUANTITY CONTROLS
+          /// QUANTITY CONTROL
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.remove, color: Colors.white),
-                onPressed: () {
-                  if (item.quantity > 1) {
-                    OrderDraftService.updateQuantity(item.id, item.quantity - 1);
-                  } else {
-                    OrderDraftService.removeItem(item.id);
-                  }
-                  onChanged();
-                },
+                onPressed: onRemove,
+                icon: const Icon(Icons.remove, color: Colors.white70),
               ),
-              Text("${item.quantity}", style: const TextStyle(color: Colors.white)),
+              Text(
+                item.quantity.toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
               IconButton(
-                icon: const Icon(Icons.add, color: Colors.white),
-                onPressed: () {
-                  OrderDraftService.updateQuantity(item.id, item.quantity + 1);
-                  onChanged();
-                },
+                onPressed: onAdd,
+                icon: const Icon(Icons.add, color: Colors.white70),
               ),
             ],
           ),
@@ -183,4 +198,15 @@ class _CartItemTile extends StatelessWidget {
       ),
     );
   }
+}
+
+///////////////////////////////////////////////////////////////////////////
+/// CART ITEM MODEL (temporary)
+///////////////////////////////////////////////////////////////////////////
+
+class _CartItem {
+  final ProductModel product;
+  int quantity;
+
+  _CartItem({required this.product, required this.quantity});
 }

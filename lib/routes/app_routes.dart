@@ -5,6 +5,8 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 
+import '../screens/products/products_screen.dart'; // ⭐ IMPORTANT
+
 import '../screens/orders/checkout_screen.dart';
 import '../screens/payment/payment_screen.dart';
 import '../screens/orders/order_success_screen.dart';
@@ -15,6 +17,8 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String dashboard = '/dashboard';
+
+  static const String products = '/products'; // ⭐ ADDED
 
   static const String checkout = '/checkout';
   static const String payment = '/payment';
@@ -34,6 +38,9 @@ class AppRoutes {
 
       case dashboard:
         return _route(const DashboardScreen());
+
+      case products:
+        return _route(const ProductsScreen()); // ⭐ ADDED
 
       case checkout:
         return _route(const CheckoutScreen());

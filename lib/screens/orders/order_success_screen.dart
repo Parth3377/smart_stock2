@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
-import '../dashboard/dashboard_screen.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
   const OrderSuccessScreen({super.key});

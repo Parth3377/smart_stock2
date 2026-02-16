@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../models/product_model.dart';
 import '../../services/product_service.dart';
+import '../products/products_screen.dart';
+import '../order_draft/order_draft_screen.dart';
+import '../orders/order_list_screen.dart';
+import '../reports/reports_screen.dart';
+import '../settings/profile_screen.dart';
+
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -73,6 +79,42 @@ class DashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
+              /// ⭐ CURVED SURFACE
+              const _CurvedSurface(),
+
+              const SizedBox(height: 16),
+
+              // ================= TOP INFO CARDS =================
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: const [
+
+                    Expanded(
+                      child: _AnimatedInfoCard(
+                        title: "My Orders",
+                        value: "1",
+                        icon: Icons.shopping_cart_outlined,
+                        gradient: [Color(0xFF2C7A7B), Color(0xFF38A3A5)],
+                      ),
+                    ),
+
+                    SizedBox(width: 14),
+
+                    Expanded(
+                      child: _AnimatedInfoCard(
+                        title: "Cart Items",
+                        value: "0",
+                        icon: Icons.inventory_2_outlined,
+                        gradient: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
               // ================= QUICK ACTIONS =================
               _sectionTitle("Quick Actions"),
               const SizedBox(height: 16),
@@ -81,14 +123,52 @@ class DashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
-                    _ActionItem(Icons.inventory_2_outlined, "Products"),
-                    _ActionItem(Icons.shopping_cart_outlined, "Cart"),
-                    _ActionItem(Icons.bar_chart_outlined, "Reports"),
-                    _ActionItem(Icons.history, "History"),
+                  children: [
+                    _ActionItem(
+                      icon: Icons.inventory_2_outlined,
+                      title: "Products",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProductsScreen()),
+                        );
+                      },
+                    ),
+                    _ActionItem(
+                      icon: Icons.shopping_cart_outlined,
+                      title: "Cart",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const OrderDraftScreen()),
+                        );
+                      },
+                    ),
+                    _ActionItem(
+                      icon: Icons.bar_chart_outlined,
+                      title: "Reports",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                        );
+                      },
+                    ),
+                    _ActionItem(
+                      icon: Icons.history,
+                      title: "History",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const OrderListScreen()),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
+
+
 
               const SizedBox(height: 28),
 
@@ -126,6 +206,30 @@ class DashboardScreen extends StatelessWidget {
         selectedItemColor: const Color(0xFF2E6CF6),
         backgroundColor: const Color(0xFF161A22),
         type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          if (index == 0) return;
+
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProductsScreen()),
+            );
+          }
+
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OrderDraftScreen()),
+            );
+          }
+
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+          }
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: "Products"),
@@ -133,19 +237,133 @@ class DashboardScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
         ],
       ),
+
     );
   }
 }
 
+////////////////////////////////////////////////////////////
+/// CURVED SURFACE
+////////////////////////////////////////////////////////////
 
+class _CurvedSurface extends StatelessWidget {
+  const _CurvedSurface();
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 24,
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F1218),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+    );
+  }
+}
 
+////////////////////////////////////////////////////////////
+/// ANIMATED INFO CARD
+////////////////////////////////////////////////////////////
 
+class _AnimatedInfoCard extends StatefulWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final List<Color> gradient;
 
+  const _AnimatedInfoCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.gradient,
+  });
 
+  @override
+  State<_AnimatedInfoCard> createState() => _AnimatedInfoCardState();
+}
 
+class _AnimatedInfoCardState extends State<_AnimatedInfoCard>
+    with SingleTickerProviderStateMixin {
 
-// ================= SECTION TITLE =================
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+
+    _scale = Tween(begin: 0.95, end: 1.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _opacity = Tween(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: widget.gradient),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: widget.gradient.last.withOpacity(0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.title,
+                      style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  Text(widget.value,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+
+              Icon(widget.icon, color: Colors.white, size: 28),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// SECTION TITLE
+////////////////////////////////////////////////////////////
 
 Widget _sectionTitle(String title) {
   return Padding(
@@ -164,54 +382,52 @@ Widget _sectionTitle(String title) {
   );
 }
 
-
-
-
-
-
-
-
-// ================= ACTION ITEM =================
+////////////////////////////////////////////////////////////
+/// ACTION ITEM
+////////////////////////////////////////////////////////////
 
 class _ActionItem extends StatelessWidget {
   final IconData icon;
   final String title;
+  final VoidCallback onTap;
 
-  const _ActionItem(this.icon, this.title);
+  const _ActionItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E6CF6).withOpacity(0.12),
-            borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2E6CF6).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: const Color(0xFF2E6CF6), size: 26),
           ),
-          child: Icon(icon, color: const Color(0xFF2E6CF6), size: 26),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-
-
-
-
-
-
-
-// ================= PRODUCT CARD =================
+////////////////////////////////////////////////////////////
+/// PRODUCT CARD
+////////////////////////////////////////////////////////////
 
 class _ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -221,81 +437,163 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF161A22),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            blurRadius: 20,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // IMAGE
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                product.image,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
+              borderRadius: BorderRadius.circular(14),
+              child: Image.asset(product.image, fit: BoxFit.cover, width: double.infinity),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // NAME
-          Text(
-            product.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
+          Text(product.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
 
           const SizedBox(height: 4),
 
-          // PRICE
-          Text(
-            "₹${product.price.toStringAsFixed(0)}",
-            style: const TextStyle(
-              color: Color(0xFF2E6CF6),
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
+          const Text("High-quality branding & security label.",
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Color(0xFFA1A6B3), fontSize: 12)),
 
           const SizedBox(height: 10),
 
-          // ADD BUTTON
-          SizedBox(
-            width: double.infinity,
-            height: 36,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E6CF6),
-                shape: RoundedRectangleBorder(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("₹${product.price.toStringAsFixed(0)}",
+                  style: const TextStyle(
+                      color: Color(0xFF2E6CF6),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
+
+              Container(
+                height: 32,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E6CF6), Color(0xFF5B8CFF)],
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
+                child: const Center(
+                  child: Text("+ Add",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
+                ),
               ),
-              child: const Text(
-                "Add to Cart",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 }
+
+class _QuickActionCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+
+  const _QuickActionCard({
+    required this.icon,
+    required this.title,
+  });
+
+  @override
+  State<_QuickActionCard> createState() => _QuickActionCardState();
+}
+
+class _QuickActionCardState extends State<_QuickActionCard> {
+  double scale = 1.0;
+
+  void _onTapDown(TapDownDetails _) {
+    setState(() => scale = 0.95);
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    setState(() => scale = 1.0);
+  }
+
+  void _onTapCancel() {
+    setState(() => scale = 1.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Navigation will be added in next step
+      },
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: scale,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: Container(
+          height: 92,
+          decoration: BoxDecoration(
+            color: const Color(0xFF161A22),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E6CF6).withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: const Color(0xFF2E6CF6),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
