@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/product_model.dart';
+import '../../providers/order_draft_provider.dart';
 import '../../services/product_service.dart';
 import '../products/products_screen.dart';
 import '../order_draft/order_draft_screen.dart';
@@ -176,6 +178,8 @@ class DashboardScreen extends StatelessWidget {
               _sectionTitle("Popular Products"),
               const SizedBox(height: 16),
 
+              // ONLY showing changed GRID section
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: GridView.builder(
@@ -189,10 +193,20 @@ class DashboardScreen extends StatelessWidget {
                     childAspectRatio: 0.78,
                   ),
                   itemBuilder: (context, index) {
-                    return _ProductCard(product: products[index]);
+                    return ProductCard(   // ✅ FIXED (was _ProductCard)
+                      product: products[index],
+
+                        onAdd: () {
+                          context.read<OrderDraftProvider>().addProduct(products[index]);
+
+
+                      }
+                      ,
+                    );
                   },
                 ),
               ),
+
 
               const SizedBox(height: 100),
             ],
@@ -429,87 +443,131 @@ class _ActionItem extends StatelessWidget {
 /// PRODUCT CARD
 ////////////////////////////////////////////////////////////
 
-class _ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final ProductModel product;
+  final VoidCallback? onAdd;
 
-  const _ProductCard({required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onAdd,
+  });
+
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  bool hovering = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.asset(product.image, fit: BoxFit.cover, width: double.infinity),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Text(product.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
-
-          const SizedBox(height: 4),
-
-          const Text("High-quality branding & security label.",
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Color(0xFFA1A6B3), fontSize: 12)),
-
-          const SizedBox(height: 10),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("₹${product.price.toStringAsFixed(0)}",
-                  style: const TextStyle(
-                      color: Color(0xFF2E6CF6),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
-
-              Container(
-                height: 32,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2E6CF6), Color(0xFF5B8CFF)],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text("+ Add",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => hovering = true),
+      onExit: (_) => setState(() => hovering = false),
+      child: AnimatedScale(
+        scale: hovering ? 1.03 : 1,
+        duration: const Duration(milliseconds: 180),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161A22),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(hovering ? 0.45 : 0.25),
+                blurRadius: hovering ? 28 : 18,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-        ],
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              /// IMAGE
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    widget.product.image,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              /// NAME
+              Text(
+                widget.product.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              /// DESCRIPTION
+              Text(
+                widget.product.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFFA1A6B3),
+                  fontSize: 12,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// PRICE + ADD
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+
+                  Text(
+                    "₹${widget.product.price.toStringAsFixed(0)}",
+                    style: const TextStyle(
+                      color: Color(0xFF2E6CF6),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+
+                  /// + ADD BUTTON (NOW ALWAYS VISIBLE)
+                  ElevatedButton(
+                    onPressed: widget.onAdd,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E6CF6),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(0, 34),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      "+ Add",
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
 
 class _QuickActionCard extends StatefulWidget {
   final IconData icon;

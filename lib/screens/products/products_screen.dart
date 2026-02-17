@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/product_model.dart';
+import '../../providers/order_draft_provider.dart';
 import '../../services/product_service.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -46,7 +48,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
       body: Column(
         children: [
-          // 🔍 SEARCH BAR
+
+          /// 🔍 SEARCH
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -66,9 +69,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
           ),
 
-          // 🏷 CATEGORY FILTER
+          /// 🏷 CATEGORY CHIPS (CENTERED FIX)
           SizedBox(
-            height: 40,
+            height: 42,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
@@ -79,8 +82,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedCategory = category),
                   child: Container(
+                    alignment: Alignment.center, // ⭐ CENTER FIX
                     padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     decoration: BoxDecoration(
                       color: selected
                           ? const Color(0xFF2E6CF6)
@@ -105,7 +109,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
           const SizedBox(height: 16),
 
-          // 🧱 PRODUCTS GRID
+          /// 🧱 GRID WITH HOVER CARD
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -114,11 +118,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 crossAxisCount: 2,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                childAspectRatio: 0.75,
+                childAspectRatio: 0.78,
               ),
               itemBuilder: (_, index) {
                 final product = _filteredProducts[index];
-                return _ProductTile(product: product);
+
+                return _HoverProductCard(
+                  product: product,
+                  onAdd: () {
+                    context.read<OrderDraftProvider>().addProduct(product);
+                  }
+                  ,
+                );
               },
             ),
           ),
@@ -128,97 +139,115 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////
-/// PRODUCT TILE
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+/// HOVER PRODUCT CARD (MATCHES DASHBOARD STYLE)
+////////////////////////////////////////////////////////////
 
-class _ProductTile extends StatelessWidget {
+class _HoverProductCard extends StatefulWidget {
   final ProductModel product;
+  final VoidCallback onAdd;
 
-  const _ProductTile({required this.product});
+  const _HoverProductCard({
+    required this.product,
+    required this.onAdd,
+  });
+
+  @override
+  State<_HoverProductCard> createState() => _HoverProductCardState();
+}
+
+class _HoverProductCardState extends State<_HoverProductCard> {
+  bool hovering = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🖼 IMAGE
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                product.image,
-                width: double.infinity,
-                fit: BoxFit.cover,
+    return MouseRegion(
+      onEnter: (_) => setState(() => hovering = true),
+      onExit: (_) => setState(() => hovering = false),
+      child: AnimatedScale(
+        scale: hovering ? 1.03 : 1,
+        duration: const Duration(milliseconds: 180),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161A22),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(hovering ? 0.45 : 0.25),
+                blurRadius: hovering ? 28 : 18,
+                offset: const Offset(0, 12),
               ),
-            ),
+            ],
           ),
 
-          const SizedBox(height: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-          // 📦 NAME
-          Text(
-            product.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // 💰 PRICE
-          Text(
-            "₹${product.price.toStringAsFixed(0)}",
-            style: const TextStyle(
-              color: Color(0xFF2E6CF6),
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // ➕ ADD TO CART
-          SizedBox(
-            width: double.infinity,
-            height: 34,
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("${product.name} added to cart")),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E6CF6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+              /// IMAGE
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    widget.product.image,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
                 ),
               ),
-              child: const Text(
-                "Add",
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+
+              const SizedBox(height: 12),
+
+              /// NAME
+              Text(
+                widget.product.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
               ),
-            ),
+
+              const SizedBox(height: 4),
+
+              /// PRICE
+              Text(
+                "₹${widget.product.price.toStringAsFixed(0)}",
+                style: const TextStyle(
+                  color: Color(0xFF2E6CF6),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// ADD BUTTON (CLEARLY VISIBLE)
+              SizedBox(
+                width: double.infinity,
+                height: 36,
+                child: ElevatedButton(
+                  onPressed: widget.onAdd,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E6CF6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    "+ Add",
+                    style:
+                    TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

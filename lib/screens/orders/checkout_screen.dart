@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../services/order_draft_service.dart';
 import '../../routes/app_routes.dart';
+import 'package:provider/provider.dart';
+import '../../providers/order_draft_provider.dart';
+
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final cartItems = OrderDraftService.items;
-    final total = OrderDraftService.totalPrice;
+    final provider = context.watch<OrderDraftProvider>();
+    final cartItems = provider.items;
+    final total = provider.totalPrice;
+
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1218),
