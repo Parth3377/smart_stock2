@@ -195,13 +195,9 @@ class DashboardScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return ProductCard(   // ✅ FIXED (was _ProductCard)
                       product: products[index],
-
-                        onAdd: () {
+                      onAdd: () {
                           context.read<OrderDraftProvider>().addProduct(products[index]);
-
-
-                      }
-                      ,
+                      },
                     );
                   },
                 ),
@@ -342,7 +338,7 @@ class _AnimatedInfoCardState extends State<_AnimatedInfoCard>
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: widget.gradient.last.withOpacity(0.35),
+                color: widget.gradient.last.withValues(alpha: 0.35),
                 blurRadius: 20,
                 offset: const Offset(0, 12),
               ),
@@ -420,7 +416,7 @@ class _ActionItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E6CF6).withOpacity(0.12),
+              color: const Color(0xFF2E6CF6).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: const Color(0xFF2E6CF6), size: 26),
@@ -555,7 +551,7 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     child: const Text(
                       "+ Add",
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900 , color: Colors.black),
                     ),
                   ),
                 ],
@@ -617,7 +613,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.35),
+                color: Colors.black.withValues(alpha: 0.35),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),
@@ -629,7 +625,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E6CF6).withOpacity(0.12),
+                  color: const Color(0xFF2E6CF6).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

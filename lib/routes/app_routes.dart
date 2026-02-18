@@ -11,8 +11,6 @@ import '../screens/orders/checkout_screen.dart';
 import '../screens/payment/payment_screen.dart';
 import '../screens/orders/order_success_screen.dart';
 
-
-
 class AppRoutes {
   // ================= ROUTE NAMES =================
   static const String splash = '/';

@@ -57,7 +57,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   const Text(
                     "Total Amount",
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: Colors.white70 , fontWeight: FontWeight.w900),
                   ),
                   Text(
                     "₹${total.toStringAsFixed(0)}",
@@ -109,6 +109,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: Colors.black
                   ),
                 ),
               ),
@@ -130,7 +131,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF2E6CF6).withOpacity(0.15)
+              ? const Color(0xFF2E6CF6).withValues(alpha: 0.15)
               : const Color(0xFF161A22),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(

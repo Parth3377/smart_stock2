@@ -241,7 +241,7 @@ class _HoverProductCardState extends State<_HoverProductCard> {
                   child: const Text(
                     "+ Add",
                     style:
-                    TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.black),
                   ),
                 ),
               ),

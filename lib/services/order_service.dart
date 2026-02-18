@@ -27,7 +27,7 @@ class OrderService {
       date: "10 Feb 2026",
       status: "Delivered",
       total: 899,
-      address: "Howrah, West Bengal",
+      address: "Navrangpura , Ahmedabad",
       paymentMethod: "Card",
       paymentStatus: "Paid",
       items: [

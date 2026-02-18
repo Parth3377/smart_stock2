@@ -24,7 +24,7 @@ class OrderDraftScreen extends StatelessWidget {
 
       /// ================= BODY =================
       body: cart.items.isEmpty
-          ? const _EmptyCart()
+          ? const _AnimatedEmptyCart()
           : Column(
         children: [
           /// ================= ITEM LIST =================
@@ -130,7 +130,7 @@ class OrderDraftScreen extends StatelessWidget {
                     const Text(
                       "Total",
                       style:
-                      TextStyle(color: Colors.white70, fontSize: 16),
+                      TextStyle(color: Colors.white70, fontSize: 16 , fontWeight: FontWeight.w600),
                     ),
                     Text(
                       "₹${cart.totalPrice.toStringAsFixed(0)}",
@@ -165,8 +165,9 @@ class OrderDraftScreen extends StatelessWidget {
                     child: const Text(
                       "Proceed to Checkout",
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w900,
                         fontSize: 16,
+                        color: Colors.black
                       ),
                     ),
                   ),
@@ -199,16 +200,126 @@ class OrderDraftScreen extends StatelessWidget {
 /// EMPTY CART UI
 ////////////////////////////////////////////////////////////
 
-class _EmptyCart extends StatelessWidget {
-  const _EmptyCart();
+class _AnimatedEmptyCart extends StatefulWidget {
+  const _AnimatedEmptyCart();
+
+  @override
+  State<_AnimatedEmptyCart> createState() => _AnimatedEmptyCartState();
+}
+
+class _AnimatedEmptyCartState extends State<_AnimatedEmptyCart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fade;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _scale = Tween(begin: 0.9, end: 1.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Your cart is empty",
-        style: TextStyle(color: Colors.white54, fontSize: 16),
+    return FadeTransition(
+      opacity: _fade,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              /// ICON
+              Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161A22),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 25,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 48,
+                  color: Color(0xFF2E6CF6),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// TITLE
+              const Text(
+                "Your cart is empty",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              /// SUBTITLE
+              const Text(
+                "Add products to start your order",
+                style: TextStyle(
+                  color: Color(0xFFA1A6B3),
+                  fontSize: 13,
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              /// EXPLORE BUTTON
+              SizedBox(
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.products);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E6CF6),
+                    padding: const EdgeInsets.symmetric(horizontal: 26),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 6,
+                  ),
+                  child: const Text(
+                    "Explore Products",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+

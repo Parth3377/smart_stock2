@@ -72,7 +72,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 30,
                     offset: const Offset(0, 20),
                   ),
@@ -93,7 +93,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2E6CF6).withOpacity(0.4),
+                          color: const Color(0xFF2E6CF6).withValues(alpha: 0.4),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -153,7 +153,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       ),
                       child: const Text(
                         "Go to Dashboard",
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: TextStyle(fontWeight: FontWeight.w900 , color: Colors.black),
                       ),
                     ),
                   ),
