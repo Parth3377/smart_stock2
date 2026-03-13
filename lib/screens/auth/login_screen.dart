@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../routes/app_routes.dart';
 import 'register_screen.dart';
+
+/// CLIENT DASHBOARD
+import '../dashboard/dashboard_screen.dart';
+
+/// ADMIN DASHBOARD
+import '../dashboard/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,22 +14,52 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _fade;
 
   bool loading = false;
   bool obscure = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _scale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
+    _fade = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    _controller.forward();
+  }
+
+  @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  /// 🔐 LOGIN → DASHBOARD
+  /// 🔐 ROLE BASED LOGIN
   Future<void> loginUser() async {
+
     setState(() => loading = true);
 
     await Future.delayed(const Duration(seconds: 1));
@@ -33,8 +68,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
+    /// ADMIN LOGIN
+    if (email == "admin@smartstock.com" && password == "admin123") {
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AdminDashboardScreen(),
+        ),
+      );
+
+    } else {
+
+      /// CLIENT LOGIN
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const DashboardScreen(),
+        ),
+      );
+    }
   }
 
   Future<void> googleLogin() async {
@@ -45,12 +101,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
+
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -62,32 +120,45 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ),
+
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
+
             child: Column(
               children: [
-                Image.asset("assets/logo.png", height: 80),
-                const SizedBox(height: 28),
 
-                /// MAIN CARD
+                /// LOGO
+                Image.asset(
+                  "assets/logo.png",
+                  height: 190,
+                ),
+
+                const SizedBox(height: 10),
+
+                /// LOGIN CARD
                 Container(
                   width: size.width > 600 ? 420 : size.width * 0.92,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 32),
+
                   decoration: BoxDecoration(
                     color: const Color(0xFF161A22),
                     borderRadius: BorderRadius.circular(18),
+
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
+                        color: Colors.black.withOpacity(0.5),
                         blurRadius: 35,
                         offset: const Offset(0, 25),
                       ),
                     ],
                   ),
+
                   child: Column(
                     children: [
+
                       const Text(
                         "Welcome Back",
                         style: TextStyle(
@@ -96,37 +167,62 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                         ),
                       ),
+
                       const SizedBox(height: 6),
+
                       const Text(
                         "Login to manage your orders & inventory",
-                        style:
-                        TextStyle(color: Color(0xFFA1A6B3), fontSize: 13),
+                        style: TextStyle(
+                          color: Color(0xFFA1A6B3),
+                          fontSize: 13,
+                        ),
                       ),
+
                       const SizedBox(height: 24),
 
-                      _inputField("Email Address", emailController),
+                      _inputField(
+                        "Email Address",
+                        emailController,
+                      ),
+
                       const SizedBox(height: 16),
 
-                      _inputField("Password", passwordController,
-                          isPassword: true),
+                      _inputField(
+                        "Password",
+                        passwordController,
+                        isPassword: true,
+                      ),
+
                       const SizedBox(height: 24),
 
-                      /// SIGN IN BUTTON
+                      /// LOGIN BUTTON
                       SizedBox(
                         width: double.infinity,
                         height: 48,
+
                         child: ElevatedButton(
                           onPressed: loading ? null : loginUser,
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2E6CF6),
+
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
+
                           child: loading
                               ? const CircularProgressIndicator(
-                              color: Colors.white)
-                              : const Text("Sign In"),
+                            color: Colors.white70,
+                          )
+                              : const Text(
+                            "Login",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
                       ),
 
@@ -134,13 +230,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       Row(
                         children: const [
-                          Expanded(child: Divider(color: Color(0xFF2A2F3A))),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child:
-                            Text("OR", style: TextStyle(color: Color(0xFFA1A6B3))),
+                          Expanded(
+                            child: Divider(color: Color(0xFF2A2F3A)),
                           ),
-                          Expanded(child: Divider(color: Color(0xFF2A2F3A))),
+
+                          Padding(
+                            padding:
+                            EdgeInsets.symmetric(horizontal: 10),
+
+                            child: Text(
+                              "OR",
+                              style: TextStyle(
+                                color: Color(0xFFA1A6B3),
+                              ),
+                            ),
+                          ),
+
+                          Expanded(
+                            child: Divider(color: Color(0xFF2A2F3A)),
+                          ),
                         ],
                       ),
 
@@ -149,17 +257,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       /// GOOGLE BUTTON
                       GestureDetector(
                         onTap: googleLogin,
+
                         child: Container(
                           height: 48,
+
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            border:
-                            Border.all(color: const Color(0xFF2A2F3A)),
+
+                            border: Border.all(
+                              color: const Color(0xFF2A2F3A),
+                            ),
                           ),
+
                           child: const Center(
                             child: Text(
                               "Continue with Google",
-                              style: TextStyle(color: Colors.white70),
+                              style: TextStyle(
+                                color: Colors.blue,
+                              ),
                             ),
                           ),
                         ),
@@ -167,19 +282,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 18),
 
-                      /// NAVIGATE TO REGISTER
+                      /// REGISTER
                       TextButton(
                         onPressed: () {
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const RegisterScreen(),
+                              builder: (_) =>
+                              const RegisterScreen(),
                             ),
                           );
+
                         },
+
                         child: const Text(
                           "New here? Create an account",
-                          style: TextStyle(color: Color(0xFFA1A6B3)),
+                          style: TextStyle(
+                            color: Color(0xFFA1A6B3),
+                          ),
                         ),
                       ),
                     ],
@@ -193,26 +314,46 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _inputField(String label, TextEditingController controller,
-      {bool isPassword = false}) {
+  Widget _inputField(
+      String label,
+      TextEditingController controller,
+      {bool isPassword = false}
+      ) {
+
     return TextField(
       controller: controller,
       obscureText: isPassword && obscure,
+
       style: const TextStyle(color: Colors.white),
+
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFFA1A6B3)),
+
+        labelStyle: const TextStyle(
+          color: Color(0xFFA1A6B3),
+        ),
+
         filled: true,
         fillColor: const Color(0xFF0F1218),
+
         suffixIcon: isPassword
             ? IconButton(
           icon: Icon(
-            obscure ? Icons.visibility_off : Icons.visibility,
+            obscure
+                ? Icons.visibility_off
+                : Icons.visibility,
+
             color: const Color(0xFFA1A6B3),
           ),
-          onPressed: () => setState(() => obscure = !obscure),
+
+          onPressed: () {
+            setState(() {
+              obscure = !obscure;
+            });
+          },
         )
             : null,
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../auth/login_screen.dart';
+import '../../widgets/loading_indicator.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,36 +14,36 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
-  late Animation<double> _fade;
-  late Animation<double> _scale;
+  late Animation<double> _bounce;
 
   @override
   void initState() {
     super.initState();
 
-    /// Smooth premium entry animation
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1200),
     );
 
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
+    _bounce = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
     );
 
-    _scale = Tween<double>(begin: 0.96, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _controller.repeat(reverse: true);
 
-    _controller.forward();
+    /// Navigate after 3 seconds
+    Timer(const Duration(seconds: 3), () {
 
-    /// Navigate to Login after short delay
-    Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
       );
+
     });
   }
 
@@ -54,58 +55,57 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0B0E14),
+
       body: Container(
         width: double.infinity,
         height: double.infinity,
 
-        /// 🔥 Industrial layered gradient (PROMPT STYLE)
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
             colors: [
               Color(0xFF0B0E14),
               Color(0xFF101626),
               Color(0xFF0B0E14),
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
 
-        child: Center(
-          child: FadeTransition(
-            opacity: _fade,
-            child: ScaleTransition(
-              scale: _scale,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 48,
-                  vertical: 36,
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
 
-                /// Glass-industrial system card
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161A22).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      blurRadius: 30,
-                      offset: const Offset(0, 20),
-                    ),
-                  ],
-                ),
+            /// BOUNCING LOGO
+            AnimatedBuilder(
+              animation: _bounce,
+              builder: (context, child) {
 
-                /// Dominant centered logo
-                child: Image.asset(
-                  "assets/logo.png",
-                  width: size.width > 600 ? 220 : size.width * 0.45,
-                ),
+                return Transform.scale(
+                  scale: _bounce.value,
+                  child: child,
+                );
+              },
+
+              child: Image.asset(
+                "assets/logo.png",
+
+                /// BIG CLEAR LOGO
+                width: size.width * 0.40,
               ),
             ),
-          ),
+
+            const SizedBox(height: 50),
+
+            /// LOADING DOTS
+            const LoadingIndicator(),
+
+          ],
         ),
       ),
     );

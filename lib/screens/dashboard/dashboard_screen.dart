@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/cart_badge.dart';
 import '../../models/product_model.dart';
 import '../../providers/order_draft_provider.dart';
 import '../../services/product_service.dart';
 import '../products/products_screen.dart';
 import '../order_draft/order_draft_screen.dart';
 import '../orders/order_list_screen.dart';
-import '../reports/reports_screen.dart';
+import '../favorites/favorites_screen.dart';
+import '../../providers/favorites_provider.dart';
 import '../settings/profile_screen.dart';
+import '../../core/helpers.dart';
+import '../../widgets/glass_bottom_navbar.dart';
 
 
 class DashboardScreen extends StatelessWidget {
@@ -73,8 +77,21 @@ class DashboardScreen extends StatelessWidget {
                       ],
                     ),
 
-                    const Icon(Icons.notifications_none,
-                        color: Colors.white, size: 28),
+                    Row(
+                      children: const [
+
+                        Icon(
+                          Icons.notifications_none,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+
+                        SizedBox(width: 12),
+
+                        CartBadge(),
+
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -90,9 +107,9 @@ class DashboardScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
-                  children: const [
+                  children: [
 
-                    Expanded(
+                    const Expanded(
                       child: _AnimatedInfoCard(
                         title: "My Orders",
                         value: "1",
@@ -101,18 +118,22 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ),
 
-                    SizedBox(width: 14),
+                    const SizedBox(width: 14),
 
                     Expanded(
-                      child: _AnimatedInfoCard(
-                        title: "Cart Items",
-                        value: "0",
-                        icon: Icons.inventory_2_outlined,
-                        gradient: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                      child: Consumer<OrderDraftProvider>(
+                        builder: (context, cart, _) {
+                          return _AnimatedInfoCard(
+                            title: "Cart Items",
+                            value: cart.items.length.toString(),
+                            icon: Icons.inventory_2_outlined,
+                            gradient: const [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                          );
+                        },
                       ),
                     ),
                   ],
-                ),
+                )
               ),
 
               const SizedBox(height: 28),
@@ -146,16 +167,51 @@ class DashboardScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    _ActionItem(
-                      icon: Icons.bar_chart_outlined,
-                      title: "Reports",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const ReportsScreen()),
+
+                    Consumer<FavoritesProvider>(
+                      builder: (context, FavoritesProvider favorites, _) {
+
+                        return Stack(
+                          children: [
+
+                            _ActionItem(
+                              icon: Icons.favorite_border_sharp,
+                              title: "Favorites",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const FavoritesScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            if (favorites.count > 0)
+                              Positioned(
+                                right: 8,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    favorites.count.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       },
                     ),
+
+
                     _ActionItem(
                       icon: Icons.history,
                       title: "History",
@@ -196,7 +252,11 @@ class DashboardScreen extends StatelessWidget {
                     return ProductCard(   // ✅ FIXED (was _ProductCard)
                       product: products[index],
                       onAdd: () {
-                          context.read<OrderDraftProvider>().addProduct(products[index]);
+                        final cart = context.read<OrderDraftProvider>();
+
+                        cart.addProduct(products[index]);
+
+                        showAddToCartPopup(context, products[index]);
                       },
                     );
                   },
@@ -211,41 +271,34 @@ class DashboardScreen extends StatelessWidget {
       ),
 
       // ================= BOTTOM NAV =================
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: GlassBottomNavbar(
         currentIndex: 0,
-        selectedItemColor: const Color(0xFF2E6CF6),
-        backgroundColor: const Color(0xFF161A22),
-        type: BottomNavigationBarType.fixed,
         onTap: (index) {
+
           if (index == 0) return;
 
           if (index == 1) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const ProductsScreen()),
             );
           }
 
           if (index == 2) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const OrderDraftScreen()),
             );
           }
 
           if (index == 3) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
           }
+
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: "Products"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: "Cart"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-        ],
       ),
 
     );
@@ -485,13 +538,93 @@ class _ProductCardState extends State<ProductCard> {
 
               /// IMAGE
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.asset(
-                    widget.product.image,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+                child: Stack(
+                  children: [
+
+                    /// PRODUCT IMAGE
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        widget.product.image,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+
+                    /// FAVORITE HEART BUTTON
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Consumer<FavoritesProvider>(
+                        builder: (context, favorites, _) {
+
+                          final isFav = favorites.isFavorite(widget.product);
+
+                          return GestureDetector(
+                            onTap: () {
+
+                              favorites.toggleFavorite(widget.product);
+
+                              /// ❤️ Flying heart animation
+                              final overlay = Overlay.of(context);
+                              final box = context.findRenderObject() as RenderBox;
+                              final position = box.localToGlobal(Offset.zero);
+
+                              final overlayEntry = OverlayEntry(
+                                builder: (_) => Positioned(
+                                  left: position.dx + 40,
+                                  top: position.dy + 40,
+
+                                  child: TweenAnimationBuilder(
+                                    tween: Tween(begin: 0.0, end: -120.0),
+                                    duration: const Duration(milliseconds: 700),
+
+                                    builder: (context, value, child) {
+
+                                      return Transform.translate(
+                                        offset: Offset(0, value),
+
+                                        child: Opacity(
+                                          opacity: 1 - (value.abs() / 120),
+
+                                          child: const Icon(
+                                            Icons.favorite,
+                                            color: Colors.red,
+                                            size: 36,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+
+                              overlay.insert(overlayEntry);
+
+                              Future.delayed(
+                                const Duration(milliseconds: 700),
+                                    () => overlayEntry.remove(),
+                              );
+                            },
+
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav ? Colors.red : Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

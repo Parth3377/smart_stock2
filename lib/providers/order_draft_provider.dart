@@ -14,12 +14,14 @@ class OrderDraftItem {
 
 /// ================= ORDER DRAFT PROVIDER =================
 class OrderDraftProvider extends ChangeNotifier {
+
   final List<OrderDraftItem> _items = [];
 
   List<OrderDraftItem> get items => _items;
 
   /// ================= ADD PRODUCT =================
   void addProduct(ProductModel product) {
+
     final index = _items.indexWhere((e) => e.product.id == product.id);
 
     if (index >= 0) {
@@ -33,6 +35,7 @@ class OrderDraftProvider extends ChangeNotifier {
 
   /// ================= INCREASE QTY =================
   void increaseQty(String productId) {
+
     final index = _items.indexWhere((e) => e.product.id == productId);
 
     if (index >= 0) {
@@ -43,21 +46,39 @@ class OrderDraftProvider extends ChangeNotifier {
 
   /// ================= DECREASE QTY =================
   void decreaseQty(String productId) {
+
     final index = _items.indexWhere((e) => e.product.id == productId);
 
     if (index >= 0) {
+
       if (_items[index].quantity > 1) {
         _items[index].quantity--;
       } else {
-        _items.removeAt(index); // remove if qty = 0
+        _items.removeAt(index);
       }
 
       notifyListeners();
     }
   }
 
+  /// ================= GET PRODUCT QUANTITY =================
+  int getQuantity(String productId) {
+
+    try {
+      final item = _items.firstWhere(
+            (e) => e.product.id == productId,
+      );
+
+      return item.quantity;
+
+    } catch (e) {
+      return 0;
+    }
+  }
+
   /// ================= TOTAL PRICE =================
   double get totalPrice {
+
     double total = 0;
 
     for (final item in _items) {
@@ -69,7 +90,9 @@ class OrderDraftProvider extends ChangeNotifier {
 
   /// ================= CLEAR CART =================
   void clearCart() {
+
     _items.clear();
+
     notifyListeners();
   }
 }

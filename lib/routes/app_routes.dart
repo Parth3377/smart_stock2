@@ -4,29 +4,38 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
-
-import '../screens/products/products_screen.dart'; // ⭐ IMPORTANT
+import '../screens/products/products_screen.dart';
 
 import '../screens/orders/checkout_screen.dart';
 import '../screens/payment/payment_screen.dart';
 import '../screens/orders/order_success_screen.dart';
+import '../screens/order_draft/order_draft_screen.dart';
+import '../screens/dashboard/admin_dashboard_screen.dart';
 
 class AppRoutes {
+
   // ================= ROUTE NAMES =================
+
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String dashboard = '/dashboard';
+  static const String adminDashboard = '/admin-dashboard';
 
-  static const String products = '/products'; // ⭐ ADDED
+  static const String products = '/products';
+
+  static const String orderDraft = '/orderDraft';
 
   static const String checkout = '/checkout';
   static const String payment = '/payment';
   static const String orderSuccess = '/order-success';
 
   // ================= ROUTE GENERATOR =================
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+
     switch (settings.name) {
+
       case splash:
         return _route(const SplashScreen());
 
@@ -39,8 +48,14 @@ class AppRoutes {
       case dashboard:
         return _route(const DashboardScreen());
 
+      case adminDashboard:
+        return _route(const AdminDashboardScreen());
+
       case products:
-        return _route(const ProductsScreen()); // ⭐ ADDED
+        return _route(const ProductsScreen());
+
+      case orderDraft:
+        return _route(const OrderDraftScreen());
 
       case checkout:
         return _route(const CheckoutScreen());
@@ -57,11 +72,15 @@ class AppRoutes {
   }
 
   // ================= COMMON ROUTE =================
+
   static MaterialPageRoute _route(Widget page) {
-    return MaterialPageRoute(builder: (_) => page);
+    return MaterialPageRoute(
+      builder: (_) => page,
+    );
   }
 
   // ================= ERROR ROUTE =================
+
   static Route<dynamic> _errorRoute() {
     return MaterialPageRoute(
       builder: (_) => const Scaffold(

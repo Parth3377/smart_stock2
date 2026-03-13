@@ -11,6 +11,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmpasswordController = TextEditingController();
 
   bool loading = false;
   bool obscure = true;
@@ -20,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    confirmpasswordController.dispose();
     super.dispose();
   }
 
@@ -90,6 +92,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       isPassword: true),
                   const SizedBox(height: 24),
 
+                  _inputField("Confirm Password", confirmpasswordController,
+                      isPassword: true),
+                  const SizedBox(height: 24),
+
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -104,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: loading
                           ? const CircularProgressIndicator(
                           color: Colors.white)
-                          : const Text("Create Account"),
+                          : const Text("Create Account" , style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.black),),
                     ),
                   ),
                 ],

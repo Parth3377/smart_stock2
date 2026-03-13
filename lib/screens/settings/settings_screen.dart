@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CustomerScreen extends StatelessWidget {
-  const CustomerScreen({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        "Customers Screen",
+        "Settings Screen",
         style: TextStyle(fontSize: 22),
       ),
     );

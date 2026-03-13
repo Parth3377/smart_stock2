@@ -3,6 +3,12 @@ import 'package:provider/provider.dart';
 import '../../models/product_model.dart';
 import '../../providers/order_draft_provider.dart';
 import '../../services/product_service.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../order_draft/order_draft_screen.dart';
+import '../settings/profile_screen.dart';
+import '../../core/helpers.dart';
+import '../../widgets/glass_bottom_navbar.dart';
+import '../../providers/favorites_provider.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -126,14 +132,54 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 return _HoverProductCard(
                   product: product,
                   onAdd: () {
-                    context.read<OrderDraftProvider>().addProduct(product);
-                  }
-                  ,
+                    final cart = context.read<OrderDraftProvider>();
+                    cart.addProduct(product);
+                    showAddToCartPopup(context, product);
+                  },
                 );
               },
             ),
           ),
         ],
+      ),
+
+      bottomNavigationBar: GlassBottomNavbar(
+
+        currentIndex: 1,
+
+        onTap: (index) {
+
+          if (index == 1) return;
+
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const DashboardScreen(),
+              ),
+            );
+          }
+
+          if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const OrderDraftScreen(),
+              ),
+            );
+          }
+
+          if (index == 3) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
+          }
+
+        },
+
       ),
     );
   }
@@ -188,13 +234,89 @@ class _HoverProductCardState extends State<_HoverProductCard> {
 
               /// IMAGE
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.asset(
-                    widget.product.image,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+                child: Stack(
+                  children: [
+
+                    /// PRODUCT IMAGE
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        widget.product.image,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+
+                    /// FAVORITE BUTTON
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Consumer<FavoritesProvider>(
+                        builder: (context, favorites, _) {
+
+                          final isFav = favorites.isFavorite(widget.product);
+
+                          return GestureDetector(
+                            onTap: () {
+
+                              favorites.toggleFavorite(widget.product);
+
+                              /// Flying heart animation
+                              final overlay = Overlay.of(context);
+                              final box = context.findRenderObject() as RenderBox;
+                              final position = box.localToGlobal(Offset.zero);
+
+                              final overlayEntry = OverlayEntry(
+                                builder: (_) => Positioned(
+                                  left: position.dx + 40,
+                                  top: position.dy + 40,
+                                  child: TweenAnimationBuilder(
+                                    tween: Tween(begin: 0.0, end: -120.0),
+                                    duration: const Duration(milliseconds: 700),
+
+                                    builder: (context, value, child) {
+                                      return Transform.translate(
+                                        offset: Offset(0, value),
+                                        child: Opacity(
+                                          opacity: 1 - (value.abs() / 120),
+                                          child: const Icon(
+                                            Icons.favorite,
+                                            color: Colors.red,
+                                            size: 36,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+
+                              overlay.insert(overlayEntry);
+
+                              Future.delayed(
+                                const Duration(milliseconds: 700),
+                                    () => overlayEntry.remove(),
+                              );
+                            },
+
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav ? Colors.red : Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

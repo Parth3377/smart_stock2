@@ -3,6 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../../providers/order_draft_provider.dart';
 import '../../routes/app_routes.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../products/products_screen.dart';
+import '../settings/profile_screen.dart';
+import '../../widgets/glass_bottom_navbar.dart';
+import '../orders/checkout_screen.dart';
 
 class OrderDraftScreen extends StatelessWidget {
   const OrderDraftScreen({super.key});
@@ -151,9 +156,11 @@ class OrderDraftScreen extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(
+                      Navigator.push(
                         context,
-                        AppRoutes.checkout,
+                        MaterialPageRoute(
+                          builder: (_) => const CheckoutScreen(selectAddressMode: true),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -177,6 +184,46 @@ class OrderDraftScreen extends StatelessWidget {
           ),
         ],
       ),
+
+      bottomNavigationBar: GlassBottomNavbar(
+
+        currentIndex: 2,
+
+        onTap: (index) {
+
+          if (index == 2) return;
+
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const DashboardScreen(),
+              ),
+            );
+          }
+
+          if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProductsScreen(),
+              ),
+            );
+          }
+
+          if (index == 3) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
+          }
+
+        },
+
+      ),
+
     );
   }
 

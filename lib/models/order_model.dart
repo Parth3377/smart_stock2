@@ -22,15 +22,15 @@ class OrderModel {
     required this.items,
   });
 
-  /// ⭐ CREATE ORDER FROM CART (FIXES YOUR PAYMENT ERROR)
+  /// ✅ FACTORY: CREATE ORDER FROM CART
   factory OrderModel.createFromDraft({
     required List<OrderDraftItem> draftItems,
     required String paymentMethod,
-    required String address, required List<OrderDraftItem> items,
+    required String address,
   }) {
     final totalAmount = draftItems.fold(
       0.0,
-          (sum, e) => sum + (e.product.price * e.quantity),
+          (sum, item) => sum + (item.product.price * item.quantity),
     );
 
     return OrderModel(
@@ -43,19 +43,19 @@ class OrderModel {
       paymentStatus: "Paid",
       items: draftItems
           .map(
-            (e) => OrderItemModel(
-          id: e.product.id,
-          name: e.product.name,
-          image: e.product.image,
-          price: e.product.price,
-          quantity: e.quantity,
+            (item) => OrderItemModel(
+          id: item.product.id,
+          name: item.product.name,
+          image: item.product.image,
+          price: item.product.price,
+          quantity: item.quantity,
         ),
       )
           .toList(),
     );
   }
 
-  /// ⭐ DATE FORMATTER
+  /// Date formatter
   static String _formatDate(DateTime date) {
     return "${date.day} ${_monthName(date.month)} ${date.year}";
   }
