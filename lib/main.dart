@@ -7,25 +7,45 @@ import 'providers/order_draft_provider.dart';
 import 'providers/notification_provider.dart';
 import 'core/theme_manager.dart';
 
+// ── NEW: Add this one import ──────────────────────────────────────
+import 'providers/admin_providers.dart';
+
+// ════════════════════════════════════════════════════════════════════
+//  main.dart  — UPDATED (minimal change)
+//
+//  The only change from your original:
+//  1. Added import for admin_providers.dart
+//  2. Added 5 admin ChangeNotifierProviders to MultiProvider list
+//  3. Everything else is IDENTICAL to your original main.dart
+// ════════════════════════════════════════════════════════════════════
+
 void main() {
   runApp(
     MultiProvider(
       providers: [
+        // ── Your existing providers (100% unchanged) ──────────────
         ChangeNotifierProvider(
           create: (_) => OrderDraftProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) => ThemeManager(),
         ),
-
         ChangeNotifierProvider(
-            create: (_) => FavoritesProvider()
+          create: (_) => FavoritesProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) => NotificationProvider(),
         ),
+
+        // ── NEW: Admin providers (just add these below yours) ─────
+        ChangeNotifierProvider(create: (_) => AdminAuthProvider()),
+        ChangeNotifierProvider(create: (_) => AdminNavProvider()),
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProductsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminOrdersProvider()),
+        ChangeNotifierProvider(create: (_) => AdminSuppliersProvider()),
+        ChangeNotifierProvider(create: (_) => AdminTransferProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProfileProvider()),
       ],
       child: const MyApp(),
     ),
@@ -37,10 +57,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ── Your existing MyApp build (100% unchanged) ─────────────────
     return MaterialApp(
-
       debugShowCheckedModeBanner: false,
-
       title: 'Order & Inventory System',
 
       /// 🌙 Global Dark Theme
@@ -59,7 +78,6 @@ class MyApp extends StatelessWidget {
 
       /// ⭐ SmartStock Routing System
       initialRoute: AppRoutes.splash,
-
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }

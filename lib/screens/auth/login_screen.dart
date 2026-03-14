@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
-
 /// CLIENT DASHBOARD
 import '../dashboard/dashboard_screen.dart';
 
