@@ -194,7 +194,7 @@ class OrderDraftScreen extends StatelessWidget {
           if (index == 2) return;
 
           if (index == 0) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => const DashboardScreen(),
@@ -203,7 +203,7 @@ class OrderDraftScreen extends StatelessWidget {
           }
 
           if (index == 1) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => const ProductsScreen(),
@@ -212,7 +212,7 @@ class OrderDraftScreen extends StatelessWidget {
           }
 
           if (index == 3) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => const ProfileScreen(),

@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/glass_bottom_navbar.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   const OrderSuccessScreen({super.key});
@@ -11,6 +11,7 @@ class OrderSuccessScreen extends StatefulWidget {
 
 class _OrderSuccessScreenState extends State<OrderSuccessScreen>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
   late Animation<double> _scale;
   late Animation<double> _opacity;
@@ -19,7 +20,6 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   void initState() {
     super.initState();
 
-    /// ⭐ SUCCESS ANIMATION
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -35,8 +35,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
     _controller.forward();
 
-    /// ⭐ AUTO REDIRECT → DASHBOARD
-    Timer(const Duration(seconds: 3), () {
+    /// AUTO REDIRECT AFTER 2 SECONDS
+    Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
 
       Navigator.pushNamedAndRemoveUntil(
@@ -55,21 +55,51 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F1218),
+
+      bottomNavigationBar: GlassBottomNavbar(
+        currentIndex: 0,
+        onTap: (index) {
+
+          if (index == 0) return;
+
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, AppRoutes.products);
+          }
+
+          if (index == 2) {
+            Navigator.pushReplacementNamed(context, AppRoutes.orderDraft);
+          }
+
+          if (index == 3) {
+            Navigator.pushReplacementNamed(context, AppRoutes.profile);
+          }
+
+        },
+      ),
 
       body: Center(
         child: FadeTransition(
           opacity: _opacity,
+
           child: ScaleTransition(
             scale: _scale,
+
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 42),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 36,
+                vertical: 42,
+              ),
+
               margin: const EdgeInsets.symmetric(horizontal: 24),
 
               decoration: BoxDecoration(
                 color: const Color(0xFF161A22),
+
                 borderRadius: BorderRadius.circular(22),
+
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.5),
@@ -81,24 +111,34 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
-                  /// ✅ SUCCESS ICON CIRCLE
+
+                  /// SUCCESS ICON
                   Container(
                     width: 86,
                     height: 86,
+
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF2E6CF6), Color(0xFF5B8CFF)],
+                        colors: [
+                          Color(0xFF2E6CF6),
+                          Color(0xFF5B8CFF)
+                        ],
                       ),
+
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2E6CF6).withValues(alpha: 0.4),
+                          color: const Color(0xFF2E6CF6)
+                              .withValues(alpha: 0.4),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
+
                     child: const Icon(
                       Icons.check,
                       color: Colors.white,
@@ -108,7 +148,6 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 24),
 
-                  /// 🎉 TITLE
                   const Text(
                     "Order Placed!",
                     style: TextStyle(
@@ -120,7 +159,6 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 10),
 
-                  /// ℹ SUBTITLE
                   const Text(
                     "Your order has been placed successfully.\nRedirecting to dashboard...",
                     textAlign: TextAlign.center,
@@ -133,10 +171,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 26),
 
-                  /// 🔘 MANUAL BUTTON (optional UX)
+                  /// BUTTON
                   SizedBox(
                     width: double.infinity,
                     height: 46,
+
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pushNamedAndRemoveUntil(
@@ -145,15 +184,22 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                               (route) => false,
                         );
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2E6CF6),
+
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                          BorderRadius.circular(12),
                         ),
                       ),
+
                       child: const Text(
                         "Go to Dashboard",
-                        style: TextStyle(fontWeight: FontWeight.w900 , color: Colors.black),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ),

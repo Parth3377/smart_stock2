@@ -18,7 +18,8 @@ class ProductsScreen extends StatefulWidget {
 }
 
 class _ProductsScreenState extends State<ProductsScreen> {
-  final List<ProductModel> _allProducts = ProductService.getProducts();
+  final List<ProductModel> _allProducts =
+      ProductService.instance.getProducts();
 
   String _search = "";
   String _selectedCategory = "All";
