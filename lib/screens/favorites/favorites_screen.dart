@@ -52,7 +52,7 @@ class FavoritesScreen extends StatelessWidget {
             Icon(
               Icons.favorite_border,
               size: 70,
-              color: Colors.white24,
+              color: Colors.red,
             ),
 
             SizedBox(height: 16),

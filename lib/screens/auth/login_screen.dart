@@ -311,6 +311,317 @@ class _LoginScreenState extends State<LoginScreen>
 
 
 
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+// import 'register_screen.dart';
+// import '../../routes/app_routes.dart';
+// import '../../providers/auth_provider.dart';
+// import '../../providers/admin_providers.dart';
+//
+// class LoginScreen extends StatefulWidget {
+//   const LoginScreen({super.key});
+//
+//   @override
+//   State<LoginScreen> createState() => _LoginScreenState();
+// }
+//
+// class _LoginScreenState extends State<LoginScreen>
+//     with SingleTickerProviderStateMixin {
+//
+//   final emailController    = TextEditingController();
+//   final passwordController = TextEditingController();
+//
+//   late AnimationController _controller;
+//   late Animation<double>   _scale;
+//
+//   bool loginLoading  = false; // for email login button
+//   bool googleLoading = false; // for google button — separate!
+//   bool obscure       = true;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _controller = AnimationController(
+//         vsync: this, duration: const Duration(milliseconds: 900));
+//     _scale = Tween<double>(begin: 0.8, end: 1.0).animate(
+//         CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+//     _controller.forward();
+//   }
+//
+//   @override
+//   void dispose() {
+//     _controller.dispose();
+//     emailController.dispose();
+//     passwordController.dispose();
+//     super.dispose();
+//   }
+//
+//   // ══════════════════════════════════════════════════════════════
+//   //  EMAIL LOGIN
+//   // ══════════════════════════════════════════════════════════════
+//   Future<void> _loginWithEmail() async {
+//     final email    = emailController.text.trim();
+//     final password = passwordController.text.trim();
+//
+//     if (email.isEmpty || password.isEmpty) {
+//       _snack('Please enter your email and password.');
+//       return;
+//     }
+//
+//     setState(() => loginLoading = true);
+//
+//     final result = await context.read<FirebaseAuthProvider>()
+//         .login(email, password);
+//
+//     if (!mounted) return;
+//     setState(() => loginLoading = false);
+//
+//     if (result.success) {
+//       _navigateTo(result.isAdmin);
+//     } else {
+//       _snack(result.errorMessage ?? 'Login failed.');
+//     }
+//   }
+//
+//   // ══════════════════════════════════════════════════════════════
+//   //  GOOGLE LOGIN
+//   // ══════════════════════════════════════════════════════════════
+//   Future<void> _loginWithGoogle() async {
+//     setState(() => googleLoading = true);
+//
+//     final result = await context.read<FirebaseAuthProvider>()
+//         .signInWithGoogle();
+//
+//     if (!mounted) return;
+//     setState(() => googleLoading = false);
+//
+//     if (result.success) {
+//       _navigateTo(result.isAdmin);
+//     } else {
+//       // 'cancelled' means user closed popup — don't show error
+//       if (result.errorMessage != null &&
+//           result.errorMessage != 'cancelled') {
+//         _snack(result.errorMessage!);
+//       }
+//     }
+//   }
+//
+//   // ══════════════════════════════════════════════════════════════
+//   //  NAVIGATE — using named routes (keeps MultiProvider intact)
+//   // ══════════════════════════════════════════════════════════════
+//   void _navigateTo(bool isAdmin) {
+//     if (isAdmin) {
+//       final user = context.read<FirebaseAuthProvider>().currentUser;
+//       context.read<AdminAuthProvider>().loginAsAdmin(
+//         user?.email ?? '',
+//         name: user?.displayName ?? 'Admin',
+//       );
+//       Navigator.pushNamedAndRemoveUntil(
+//           context, AppRoutes.adminDashboard, (r) => false);
+//     } else {
+//       Navigator.pushNamedAndRemoveUntil(
+//           context, AppRoutes.dashboard, (r) => false);
+//     }
+//   }
+//
+//   void _snack(String msg) {
+//     if (!mounted) return;
+//     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//       content: Text(msg),
+//       backgroundColor: Colors.redAccent,
+//       behavior: SnackBarBehavior.floating,
+//       duration: const Duration(seconds: 4),
+//     ));
+//   }
+//
+//   // ══════════════════════════════════════════════════════════════
+//   //  UI
+//   // ══════════════════════════════════════════════════════════════
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = MediaQuery.of(context).size;
+//
+//     return Scaffold(
+//       body: Container(
+//         width: double.infinity,
+//         height: double.infinity,
+//         decoration: const BoxDecoration(
+//           gradient: LinearGradient(
+//             begin: Alignment.topLeft,
+//             end: Alignment.bottomRight,
+//             colors: [
+//               Color(0xFF0B0E14),
+//               Color(0xFF101626),
+//               Color(0xFF0B0E14),
+//             ],
+//           ),
+//         ),
+//         child: Center(
+//           child: SingleChildScrollView(
+//             padding: const EdgeInsets.all(24),
+//             child: Column(children: [
+//
+//               // LOGO
+//               Image.asset('assets/logo.png', height: 190),
+//               const SizedBox(height: 10),
+//
+//               // CARD
+//               Container(
+//                 width: size.width > 600 ? 420 : size.width * 0.92,
+//                 padding: const EdgeInsets.symmetric(
+//                     horizontal: 28, vertical: 32),
+//                 decoration: BoxDecoration(
+//                   color: const Color(0xFF161A22),
+//                   borderRadius: BorderRadius.circular(18),
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.5),
+//                       blurRadius: 35,
+//                       offset: const Offset(0, 25),
+//                     ),
+//                   ],
+//                 ),
+//                 child: Column(children: [
+//
+//                   const Text('Welcome Back',
+//                       style: TextStyle(fontSize: 22,
+//                           fontWeight: FontWeight.w600, color: Colors.white)),
+//                   const SizedBox(height: 6),
+//                   const Text('Login to manage your orders & inventory',
+//                       style: TextStyle(color: Color(0xFFA1A6B3), fontSize: 13)),
+//                   const SizedBox(height: 24),
+//
+//                   // Email field
+//                   _field('Email Address', emailController),
+//                   const SizedBox(height: 16),
+//
+//                   // Password field
+//                   _field('Password', passwordController, isPassword: true),
+//                   const SizedBox(height: 24),
+//
+//                   // ── LOGIN BUTTON ───────────────────────────────
+//                   SizedBox(
+//                     width: double.infinity,
+//                     height: 48,
+//                     child: ElevatedButton(
+//                       onPressed: loginLoading ? null : _loginWithEmail,
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: const Color(0xFF2E6CF6),
+//                         shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12)),
+//                       ),
+//                       child: loginLoading
+//                           ? const SizedBox(
+//                           width: 22, height: 22,
+//                           child: CircularProgressIndicator(
+//                               color: Colors.white70, strokeWidth: 2))
+//                           : const Text('Login',
+//                           style: TextStyle(fontSize: 16,
+//                               fontWeight: FontWeight.w900,
+//                               color: Colors.black)),
+//                     ),
+//                   ),
+//
+//                   const SizedBox(height: 22),
+//                   Row(children: const [
+//                     Expanded(child: Divider(color: Color(0xFF2A2F3A))),
+//                     Padding(
+//                         padding: EdgeInsets.symmetric(horizontal: 10),
+//                         child: Text('OR',
+//                             style: TextStyle(color: Color(0xFFA1A6B3)))),
+//                     Expanded(child: Divider(color: Color(0xFF2A2F3A))),
+//                   ]),
+//                   const SizedBox(height: 18),
+//
+//                   // ── GOOGLE BUTTON ──────────────────────────────
+//                   SizedBox(
+//                     width: double.infinity,
+//                     height: 48,
+//                     child: OutlinedButton(
+//                       onPressed: googleLoading ? null : _loginWithGoogle,
+//                       style: OutlinedButton.styleFrom(
+//                         side: const BorderSide(color: Color(0xFF2A2F3A)),
+//                         shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12)),
+//                       ),
+//                       child: googleLoading
+//                           ? const SizedBox(
+//                           width: 22, height: 22,
+//                           child: CircularProgressIndicator(
+//                               color: Colors.blue, strokeWidth: 2))
+//                           : Row(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         children: [
+//                           Container(
+//                             width: 20, height: 20,
+//                             decoration: BoxDecoration(
+//                               color: Colors.white,
+//                               borderRadius: BorderRadius.circular(3),
+//                             ),
+//                             child: const Center(
+//                               child: Text('G',
+//                                 style: TextStyle(
+//                                   fontSize: 13,
+//                                   fontWeight: FontWeight.bold,
+//                                   color: Color(0xFF4285F4),
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                           const SizedBox(width: 10),
+//                           const Text('Continue with Google',
+//                               style: TextStyle(color: Colors.blue)),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//
+//                   const SizedBox(height: 18),
+//
+//                   // REGISTER LINK
+//                   TextButton(
+//                     onPressed: () =>
+//                         Navigator.pushNamed(context, AppRoutes.register),
+//                     child: const Text('New here? Create an account',
+//                         style: TextStyle(color: Color(0xFFA1A6B3))),
+//                   ),
+//
+//                 ]),
+//               ),
+//             ]),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _field(String label, TextEditingController ctrl,
+//       {bool isPassword = false}) {
+//     return TextField(
+//       controller: ctrl,
+//       obscureText: isPassword && obscure,
+//       style: const TextStyle(color: Colors.white),
+//       decoration: InputDecoration(
+//         labelText: label,
+//         labelStyle: const TextStyle(color: Color(0xFFA1A6B3)),
+//         filled: true,
+//         fillColor: const Color(0xFF0F1218),
+//         suffixIcon: isPassword
+//             ? IconButton(
+//             icon: Icon(
+//               obscure ? Icons.visibility_off : Icons.visibility,
+//               color: const Color(0xFFA1A6B3),
+//             ),
+//             onPressed: () => setState(() => obscure = !obscure))
+//             : null,
+//         border: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(12),
+//             borderSide: BorderSide.none),
+//       ),
+//     );
+//   }
+// }
+
 
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';

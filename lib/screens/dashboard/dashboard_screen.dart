@@ -412,7 +412,7 @@ class _ProductCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(isFav ? Icons.favorite : Icons.favorite_border,
-                      color: isFav ? Colors.red : Colors.white, size: 16),
+                      color: isFav ? Colors.red : Colors.blueAccent, size: 16),
                 ),
               ),
             ),
