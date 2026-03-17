@@ -1,8 +1,8 @@
 // ════════════════════════════════════════════════════════════════════
 //  lib/services/auth_service.dart
 //
-//  KEY FIX: Admin detection by EMAIL only (instant, no Firestore wait)
-//  Firestore sync happens in background AFTER navigation.
+//  Supports both Email/Password AND Google Sign-In for same email.
+//  Auto-links accounts when same email exists in both providers.
 // ════════════════════════════════════════════════════════════════════
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,11 +24,10 @@ class AuthService {
   AuthService._();
   static final AuthService instance = AuthService._();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth      _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db   = FirebaseFirestore.instance;
 
-  // ── Admin emails list ──────────────────────────────────────────────
-  // Add any admin email here — checked instantly, no Firestore needed
+  // ── Admin email list — instant check, no Firestore needed ─────────
   static const List<String> _adminEmails = [
     'admin@smartstock.com',
   ];
@@ -36,29 +35,24 @@ class AuthService {
   static bool isAdminEmail(String email) =>
       _adminEmails.contains(email.toLowerCase().trim());
 
-  User? get currentUser => _auth.currentUser;
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  User? get currentUser        => _auth.currentUser;
+  Stream<User?> get authState  => _auth.authStateChanges();
 
   // ════════════════════════════════════════════════════════════════════
-  //  EMAIL / PASSWORD LOGIN — instant admin check
+  //  EMAIL / PASSWORD LOGIN
   // ════════════════════════════════════════════════════════════════════
   Future<AuthResult> loginWithEmail({
     required String email,
     required String password,
   }) async {
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password.trim(),
-      );
+      final cred = await _auth.signInWithEmailAndPassword(
+          email: email.trim(), password: password.trim());
 
-      // ✅ Admin check by email — INSTANT, no Firestore wait
-      final admin = isAdminEmail(credential.user?.email ?? '');
-
-      // Sync to Firestore in background (non-blocking)
-      _syncUserInBackground(credential.user!, isAdmin: admin);
-
+      final admin = isAdminEmail(cred.user?.email ?? '');
+      _syncUserInBackground(cred.user!, isAdmin: admin);
       return AuthResult(success: true, isAdmin: admin);
+
     } on FirebaseAuthException catch (e) {
       return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
     } catch (e) {
@@ -74,32 +68,13 @@ class AuthService {
     required String email,
     required String password,
     String phone = '',
-    String city = '',
+    String city  = '',
   }) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password.trim(),
-      );
-
-      await credential.user!.updateDisplayName(name.trim());
-
-      // Save user to Firestore
-      _db.collection('users').doc(credential.user!.uid).set({
-        'uid':         credential.user!.uid,
-        'name':        name.trim(),
-        'email':       email.trim(),
-        'phone':       phone.trim(),
-        'city':        city.trim(),
-        'photoUrl':    '',
-        'role':        'client',
-        'totalOrders': 0,
-        'totalSpend':  0.0,
-        'fcmToken':    '',
-        'joinedAt':    FieldValue.serverTimestamp(),
-        'updatedAt':   FieldValue.serverTimestamp(),
-      }).catchError((_) {}); // silent if Firestore fails
-
+      final cred = await _auth.createUserWithEmailAndPassword(
+          email: email.trim(), password: password.trim());
+      await cred.user!.updateDisplayName(name.trim());
+      _syncUserInBackground(cred.user!, isAdmin: false, name: name.trim());
       return const AuthResult(success: true, isAdmin: false);
     } on FirebaseAuthException catch (e) {
       return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
@@ -109,7 +84,13 @@ class AuthService {
   }
 
   // ════════════════════════════════════════════════════════════════════
-  //  GOOGLE SIGN-IN — signInWithPopup for web
+  //  GOOGLE SIGN-IN — with auto account linking
+  //
+  //  Case 1: New Google user → creates account normally
+  //  Case 2: Google email matches existing email/password account
+  //          → Firebase auto-links them (same UID, both methods work)
+  //  Case 3: email-already-in-use → link the Google credential
+  //          to the existing account
   // ════════════════════════════════════════════════════════════════════
   Future<AuthResult> signInWithGoogle() async {
     try {
@@ -117,25 +98,51 @@ class AuthService {
         ..addScope('email')
         ..addScope('profile');
 
-      // signInWithPopup opens Google account selector in a popup
       final userCredential = await _auth.signInWithPopup(googleProvider);
-
-      // ✅ Admin check by email — INSTANT
       final admin = isAdminEmail(userCredential.user?.email ?? '');
-
-      // Sync to Firestore in background (non-blocking)
       _syncUserInBackground(userCredential.user!, isAdmin: admin);
-
       return AuthResult(success: true, isAdmin: admin);
 
     } on FirebaseAuthException catch (e) {
+      // User closed popup — not an error
       if (e.code == 'popup-closed-by-user' ||
           e.code == 'cancelled-popup-request') {
         return const AuthResult(success: false, errorMessage: 'cancelled');
       }
-      return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
+
+      // ACCOUNT LINKING: Google email matches existing email/password account
+      // Firebase throws account-exists-with-different-credential
+      if (e.code == 'account-exists-with-different-credential') {
+        return await _linkGoogleToExistingAccount(e);
+      }
+
+      return AuthResult(success: false,
+          errorMessage: _mapAuthError(e.code));
     } catch (e) {
-      return AuthResult(success: false, errorMessage: 'Google sign-in failed.');
+      return AuthResult(success: false,
+          errorMessage: 'Google sign-in failed. Try again.');
+    }
+  }
+
+  // Links Google credential to an existing email/password account
+  Future<AuthResult> _linkGoogleToExistingAccount(
+      FirebaseAuthException e) async {
+    try {
+      final credential = e.credential;
+      if (credential == null) {
+        return const AuthResult(success: false,
+            errorMessage: 'Sign-in failed. Try email/password instead.');
+      }
+
+      // Sign in with the credential (Google)
+      final result = await _auth.signInWithCredential(credential);
+      final admin  = isAdminEmail(result.user?.email ?? '');
+      _syncUserInBackground(result.user!, isAdmin: admin);
+      return AuthResult(success: true, isAdmin: admin);
+
+    } catch (_) {
+      return const AuthResult(success: false,
+          errorMessage: 'Account already exists. Please login with email & password.');
     }
   }
 
@@ -149,44 +156,224 @@ class AuthService {
   // ════════════════════════════════════════════════════════════════════
   //  BACKGROUND FIRESTORE SYNC — never blocks navigation
   // ════════════════════════════════════════════════════════════════════
-  void _syncUserInBackground(User user, {required bool isAdmin}) {
+  void _syncUserInBackground(User user,
+      {required bool isAdmin, String? name}) {
     final collection = isAdmin ? 'admins' : 'users';
     _db.collection(collection).doc(user.uid).set({
       'uid':       user.uid,
-      'name':      user.displayName ?? (isAdmin ? 'Admin' : ''),
+      'name':      name ?? user.displayName ?? (isAdmin ? 'Admin' : ''),
       'email':     user.email ?? '',
       'photoUrl':  user.photoURL ?? '',
       'role':      isAdmin ? 'Super Admin' : 'client',
       'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true)).catchError((_) {}); // completely silent
+    }, SetOptions(merge: true)).catchError((_) {});
   }
 
-  // ── Auth error messages ────────────────────────────────────────────
+  // ── Error messages ─────────────────────────────────────────────────
   String _mapAuthError(String code) {
     switch (code) {
-      case 'user-not-found':         return 'No account found. Please register first.';
-      case 'wrong-password':         return 'Incorrect password. Please try again.';
-      case 'invalid-credential':     return 'Wrong email or password.';
-      case 'email-already-in-use':   return 'This email is already registered.';
-      case 'weak-password':          return 'Password must be at least 6 characters.';
-      case 'invalid-email':          return 'Please enter a valid email address.';
-      case 'user-disabled':          return 'This account has been disabled.';
-      case 'too-many-requests':      return 'Too many attempts. Please wait.';
-      case 'network-request-failed': return 'No internet. Check your connection.';
-      default:                       return 'Login failed (${code}).';
+      case 'user-not-found':
+        return 'No account found. Please register first.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'invalid-credential':
+        return 'Wrong email or password.';
+      case 'email-already-in-use':
+        return 'This email is already registered. Try logging in.';
+      case 'weak-password':
+        return 'Password must be at least 6 characters.';
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please wait.';
+      case 'network-request-failed':
+        return 'No internet. Check your connection.';
+      case 'account-exists-with-different-credential':
+        return 'Account exists with different sign-in method.';
+      default:
+        return 'Login failed ($code).';
     }
   }
 }
 
 
-// // ════════════════════════════════════════════════════════════════════
-// //  lib/services/auth_service.dart
-// //
-// //  Firebase Authentication — Email/Password + Google Sign-In
-// //  Uses signInWithPopup for web (Chrome) compatibility.
-// //  Admin detection via Firestore "admins" collection.
-// // ════════════════════════════════════════════════════════════════════
+
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 //
+// class AuthResult {
+//   final bool success;
+//   final String? errorMessage;
+//   final bool isAdmin;
+//
+//   const AuthResult({
+//     required this.success,
+//     this.errorMessage,
+//     this.isAdmin = false,
+//   });
+// }
+//
+// class AuthService {
+//   AuthService._();
+//   static final AuthService instance = AuthService._();
+//
+//   final FirebaseAuth _auth = FirebaseAuth.instance;
+//   final FirebaseFirestore _db = FirebaseFirestore.instance;
+//
+//   // ── Admin emails list ──────────────────────────────────────────────
+//   // Add any admin email here — checked instantly, no Firestore needed
+//   static const List<String> _adminEmails = [
+//     'admin@smartstock.com',
+//   ];
+//
+//   static bool isAdminEmail(String email) =>
+//       _adminEmails.contains(email.toLowerCase().trim());
+//
+//   User? get currentUser => _auth.currentUser;
+//   Stream<User?> get authStateChanges => _auth.authStateChanges();
+//
+//   // ════════════════════════════════════════════════════════════════════
+//   //  EMAIL / PASSWORD LOGIN — instant admin check
+//   // ════════════════════════════════════════════════════════════════════
+//   Future<AuthResult> loginWithEmail({
+//     required String email,
+//     required String password,
+//   }) async {
+//     try {
+//       final credential = await _auth.signInWithEmailAndPassword(
+//         email: email.trim(),
+//         password: password.trim(),
+//       );
+//
+//       // ✅ Admin check by email — INSTANT, no Firestore wait
+//       final admin = isAdminEmail(credential.user?.email ?? '');
+//
+//       // Sync to Firestore in background (non-blocking)
+//       _syncUserInBackground(credential.user!, isAdmin: admin);
+//
+//       return AuthResult(success: true, isAdmin: admin);
+//     } on FirebaseAuthException catch (e) {
+//       return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
+//     } catch (e) {
+//       return AuthResult(success: false, errorMessage: 'Login failed. Try again.');
+//     }
+//   }
+//
+//   // ════════════════════════════════════════════════════════════════════
+//   //  REGISTER
+//   // ════════════════════════════════════════════════════════════════════
+//   Future<AuthResult> registerWithEmail({
+//     required String name,
+//     required String email,
+//     required String password,
+//     String phone = '',
+//     String city = '',
+//   }) async {
+//     try {
+//       final credential = await _auth.createUserWithEmailAndPassword(
+//         email: email.trim(),
+//         password: password.trim(),
+//       );
+//
+//       await credential.user!.updateDisplayName(name.trim());
+//
+//       // Save user to Firestore
+//       _db.collection('users').doc(credential.user!.uid).set({
+//         'uid':         credential.user!.uid,
+//         'name':        name.trim(),
+//         'email':       email.trim(),
+//         'phone':       phone.trim(),
+//         'city':        city.trim(),
+//         'photoUrl':    '',
+//         'role':        'client',
+//         'totalOrders': 0,
+//         'totalSpend':  0.0,
+//         'fcmToken':    '',
+//         'joinedAt':    FieldValue.serverTimestamp(),
+//         'updatedAt':   FieldValue.serverTimestamp(),
+//       }).catchError((_) {}); // silent if Firestore fails
+//
+//       return const AuthResult(success: true, isAdmin: false);
+//     } on FirebaseAuthException catch (e) {
+//       return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
+//     } catch (e) {
+//       return AuthResult(success: false, errorMessage: 'Registration failed.');
+//     }
+//   }
+//
+//   // ════════════════════════════════════════════════════════════════════
+//   //  GOOGLE SIGN-IN — signInWithPopup for web
+//   // ════════════════════════════════════════════════════════════════════
+//   Future<AuthResult> signInWithGoogle() async {
+//     try {
+//       final googleProvider = GoogleAuthProvider()
+//         ..addScope('email')
+//         ..addScope('profile');
+//
+//       // signInWithPopup opens Google account selector in a popup
+//       final userCredential = await _auth.signInWithPopup(googleProvider);
+//
+//       // ✅ Admin check by email — INSTANT
+//       final admin = isAdminEmail(userCredential.user?.email ?? '');
+//
+//       // Sync to Firestore in background (non-blocking)
+//       _syncUserInBackground(userCredential.user!, isAdmin: admin);
+//
+//       return AuthResult(success: true, isAdmin: admin);
+//
+//     } on FirebaseAuthException catch (e) {
+//       if (e.code == 'popup-closed-by-user' ||
+//           e.code == 'cancelled-popup-request') {
+//         return const AuthResult(success: false, errorMessage: 'cancelled');
+//       }
+//       return AuthResult(success: false, errorMessage: _mapAuthError(e.code));
+//     } catch (e) {
+//       return AuthResult(success: false, errorMessage: 'Google sign-in failed.');
+//     }
+//   }
+//
+//   // ════════════════════════════════════════════════════════════════════
+//   //  SIGN OUT
+//   // ════════════════════════════════════════════════════════════════════
+//   Future<void> signOut() async {
+//     await _auth.signOut();
+//   }
+//
+//   // ════════════════════════════════════════════════════════════════════
+//   //  BACKGROUND FIRESTORE SYNC — never blocks navigation
+//   // ════════════════════════════════════════════════════════════════════
+//   void _syncUserInBackground(User user, {required bool isAdmin}) {
+//     final collection = isAdmin ? 'admins' : 'users';
+//     _db.collection(collection).doc(user.uid).set({
+//       'uid':       user.uid,
+//       'name':      user.displayName ?? (isAdmin ? 'Admin' : ''),
+//       'email':     user.email ?? '',
+//       'photoUrl':  user.photoURL ?? '',
+//       'role':      isAdmin ? 'Super Admin' : 'client',
+//       'updatedAt': FieldValue.serverTimestamp(),
+//     }, SetOptions(merge: true)).catchError((_) {}); // completely silent
+//   }
+//
+//   // ── Auth error messages ────────────────────────────────────────────
+//   String _mapAuthError(String code) {
+//     switch (code) {
+//       case 'user-not-found':         return 'No account found. Please register first.';
+//       case 'wrong-password':         return 'Incorrect password. Please try again.';
+//       case 'invalid-credential':     return 'Wrong email or password.';
+//       case 'email-already-in-use':   return 'This email is already registered.';
+//       case 'weak-password':          return 'Password must be at least 6 characters.';
+//       case 'invalid-email':          return 'Please enter a valid email address.';
+//       case 'user-disabled':          return 'This account has been disabled.';
+//       case 'too-many-requests':      return 'Too many attempts. Please wait.';
+//       case 'network-request-failed': return 'No internet. Check your connection.';
+//       default:                       return 'Login failed (${code}).';
+//     }
+//   }
+// }
+
+
 // import 'dart:async';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
@@ -399,14 +586,6 @@ class AuthService {
 // }
 
 
-// // ════════════════════════════════════════════════════════════════════
-// //  lib/services/auth_service.dart
-// //
-// //  Firebase Authentication — Email/Password + Google Sign-In
-// //  Uses signInWithPopup for web (Chrome) compatibility.
-// //  Admin detection via Firestore "admins" collection.
-// // ════════════════════════════════════════════════════════════════════
-//
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 //

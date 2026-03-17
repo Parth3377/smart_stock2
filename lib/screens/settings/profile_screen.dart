@@ -168,7 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: OutlinedButton.icon(
               onPressed: () => _logoutDialog(context),
               icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text('Logout', style: TextStyle(color: Colors.red)),
+              label: const Text('Logout', style: TextStyle(color: Colors.blueAccent , fontWeight: FontWeight.w900 , fontSize: 18)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.red),
                 padding: const EdgeInsets.symmetric(vertical: 14),
