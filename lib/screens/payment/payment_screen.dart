@@ -7,7 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../providers/order_draft_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -15,6 +14,8 @@ import '../../models/order_model.dart';
 import '../../services/order_service.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/glass_bottom_navbar.dart';
+import 'upi_payment_screen.dart';
+import 'card_payment_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -129,7 +130,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  // ── Place order — INSTANT navigation, background Firestore save ────
+  // ── Place order — routes based on selected payment method ──────────
   void _placeOrder(BuildContext ctx, OrderDraftProvider draft, double total) {
     if (selectedMethod == null) {
       ScaffoldMessenger.of(ctx).showSnackBar(
@@ -145,22 +146,40 @@ class _PaymentScreenState extends State<PaymentScreen> {
       return;
     }
 
-    setState(() => loading = true);
-
-    // Build order
-    final user     = FirebaseAuth.instance.currentUser;
-    final userName = user?.displayName ?? user?.email ?? 'Customer';
-
+    // Build the order object once — passed to payment screens
     final order = OrderModel.createFromDraft(
       draftItems:    draft.items,
       paymentMethod: selectedMethod!,
       address:       'Ahmedabad, Gujarat',
     );
 
-    // Add locally + save to Firestore in background (NON-BLOCKING)
-    OrderService.addOrder(order);
+    if (selectedMethod == 'UPI') {
+      // Navigate to UPI screen — it will place the order on success
+      Navigator.push(ctx, MaterialPageRoute(
+        builder: (_) => UpiPaymentScreen(
+          order: order,
+          draft: draft,
+          total: total,
+        ),
+      ));
+      return;
+    }
 
-    // Add notification
+    if (selectedMethod == 'Credit / Debit Card') {
+      // Navigate to Card screen — it will place the order on success
+      Navigator.push(ctx, MaterialPageRoute(
+        builder: (_) => CardPaymentScreen(
+          order: order,
+          draft: draft,
+          total: total,
+        ),
+      ));
+      return;
+    }
+
+    // Cash on Delivery — place order directly, go to success
+    setState(() => loading = true);
+    OrderService.addOrder(order);
     try {
       ctx.read<NotificationProvider>().addNotification(
         title:   '🎉 Order Placed!',
@@ -169,13 +188,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         orderId: order.id,
       );
     } catch (_) {}
-
-    // Clear cart
     draft.clearCart();
-
     setState(() => loading = false);
-
-    // Navigate immediately — no await, no delay
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(
         ctx, AppRoutes.orderSuccess, (route) => false);
@@ -243,7 +257,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 }
-
 
 
 // import 'package:flutter/material.dart';

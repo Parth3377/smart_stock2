@@ -159,7 +159,7 @@ class OrderDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF161A22),
         elevation: 0,
-        title: const Text("Order Details"),
+        title: const Text("Order History"),
         centerTitle: true,
       ),
 
