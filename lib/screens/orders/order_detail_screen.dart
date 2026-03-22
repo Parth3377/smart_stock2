@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
 import '../../models/order_item_model.dart';
-import '../../providers/location_provider.dart';
-import '../maps/delivery_location_screen.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final OrderModel order;
@@ -25,7 +22,7 @@ class OrderDetailScreen extends StatelessWidget {
   }
 
   // ================= STEP WIDGET =================
-  Widget _timelineStep({
+  Widget _timelineStep(BuildContext context, {
     required String title,
     required int stepIndex,
     required int currentIndex,
@@ -48,7 +45,7 @@ class OrderDetailScreen extends StatelessWidget {
                 color: completed ? activeColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: completed ? activeColor : Colors.white38,
+                  color: completed ? activeColor : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey),
                   width: 2,
                 ),
               ),
@@ -61,7 +58,7 @@ class OrderDetailScreen extends StatelessWidget {
               Container(
                 width: 2,
                 height: 40,
-                color: completed ? activeColor : Colors.white24,
+                color: completed ? activeColor : (Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey).withOpacity(0.3),
               ),
           ],
         ),
@@ -74,7 +71,7 @@ class OrderDetailScreen extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              color: completed ? Colors.white : Colors.white38,
+              color: completed ? Theme.of(context).textTheme.bodyLarge?.color : Theme.of(context).textTheme.bodySmall?.color,
               fontSize: 14,
               fontWeight: completed ? FontWeight.w600 : FontWeight.w400,
             ),
@@ -85,12 +82,12 @@ class OrderDetailScreen extends StatelessWidget {
   }
 
   // ================= SECTION CARD =================
-  Widget _sectionCard({String? title, required Widget child}) {
+  Widget _sectionCard(BuildContext context, {String? title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -99,8 +96,8 @@ class OrderDetailScreen extends StatelessWidget {
           if (title != null) ...[
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -113,12 +110,12 @@ class OrderDetailScreen extends StatelessWidget {
   }
 
   // ================= PRODUCT TILE =================
-  Widget _productTile(OrderItemModel item) {
+  Widget _productTile(BuildContext context, OrderItemModel item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -136,12 +133,12 @@ class OrderDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               item.name,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
             ),
           ),
           Text(
             "x${item.quantity}",
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
           ),
         ],
       ),
@@ -154,12 +151,12 @@ class OrderDetailScreen extends StatelessWidget {
     final int currentIndex = _statusIndex(order.status);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161A22),
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        title: const Text("Order History"),
+        title: const Text("Order Details"),
         centerTitle: true,
       ),
 
@@ -169,14 +166,14 @@ class OrderDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// ORDER HEADER
-            _sectionCard(
+            _sectionCard(context,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     order.id,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -185,13 +182,13 @@ class OrderDetailScreen extends StatelessWidget {
                   Text(
                     order.date,
                     style:
-                    const TextStyle(color: Colors.white70, fontSize: 12),
+                    TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 12),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     "Total: ₹${order.total.toStringAsFixed(0)}",
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -203,40 +200,40 @@ class OrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             /// PRODUCTS
-            _sectionCard(
+            _sectionCard(context,
               title: "Ordered Products",
               child: Column(
-                children: order.items.map(_productTile).toList(),
+                children: order.items.map((item) => _productTile(context, item)).toList(),
               ),
             ),
 
             const SizedBox(height: 16),
 
             /// DELIVERY
-            _sectionCard(
+            _sectionCard(context,
               title: "Delivery Address",
               child: Text(
                 order.address,
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
               ),
             ),
 
             const SizedBox(height: 16),
 
             /// PAYMENT
-            _sectionCard(
+            _sectionCard(context,
               title: "Payment Info",
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Method: ${order.paymentMethod}",
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "Status: ${order.paymentStatus}",
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                   ),
                 ],
               ),
@@ -245,23 +242,23 @@ class OrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             /// ================= TRACKING TIMELINE =================
-            _sectionCard(
+            _sectionCard(context,
               title: "Order Tracking",
               child: Column(
                 children: [
-                  _timelineStep(
+                  _timelineStep(context,
                     title: "Order Placed",
                     stepIndex: 0,
                     currentIndex: currentIndex,
                     isLast: false,
                   ),
-                  _timelineStep(
+                  _timelineStep(context,
                     title: "Order Confirmed",
                     stepIndex: 1,
                     currentIndex: currentIndex,
                     isLast: false,
                   ),
-                  _timelineStep(
+                  _timelineStep(context,
                     title: "Delivered",
                     stepIndex: 2,
                     currentIndex: currentIndex,
@@ -273,42 +270,46 @@ class OrderDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            /// TRACK ON MAP BUTTON
+            /// DELIVERY DISTANCE INFO (replaces Track on Map button)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChangeNotifierProvider(
-                          create: (_) => LocationProvider(),
-                          child: DeliveryLocationScreen(
-                            orderId:     order.id,
-                            isSelecting: false,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.map_outlined, color: Colors.white),
-                  label: const Text(
-                    'Track on Map',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E6CF6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF2E6CF6).withOpacity(0.3)),
                 ),
+                child: Row(children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E6CF6).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.local_shipping_outlined,
+                        color: Color(0xFF2E6CF6), size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Estimated Delivery Distance',
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 12)),
+                      SizedBox(height: 4),
+                      Text('SmartStock Warehouse → Your Location',
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,
+                              fontWeight: FontWeight.w600, fontSize: 13)),
+                      SizedBox(height: 4),
+                      Row(children: [
+                        Icon(Icons.route_outlined, size: 14, color: Color(0xFF2E6CF6)),
+                        SizedBox(width: 4),
+                        Text('Ahmedabad, Gujarat',
+                            style: TextStyle(color: Color(0xFF2E6CF6), fontSize: 12)),
+                      ]),
+                    ],
+                  )),
+                ]),
               ),
             ),
 
@@ -321,10 +322,12 @@ class OrderDetailScreen extends StatelessWidget {
 }
 
 
-
 // import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
 // import '../../models/order_model.dart';
 // import '../../models/order_item_model.dart';
+// import '../../providers/location_provider.dart';
+// import '../maps/delivery_location_screen.dart';
 //
 // class OrderDetailScreen extends StatelessWidget {
 //   final OrderModel order;
@@ -480,7 +483,7 @@ class OrderDetailScreen extends StatelessWidget {
 //       appBar: AppBar(
 //         backgroundColor: const Color(0xFF161A22),
 //         elevation: 0,
-//         title: const Text("Order Details"),
+//         title: const Text("Order History"),
 //         centerTitle: true,
 //       ),
 //
@@ -589,6 +592,47 @@ class OrderDetailScreen extends StatelessWidget {
 //                     isLast: true,
 //                   ),
 //                 ],
+//               ),
+//             ),
+//
+//             const SizedBox(height: 16),
+//
+//             /// TRACK ON MAP BUTTON
+//             Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 16),
+//               child: SizedBox(
+//                 width: double.infinity,
+//                 height: 50,
+//                 child: ElevatedButton.icon(
+//                   onPressed: () {
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (_) => ChangeNotifierProvider(
+//                           create: (_) => LocationProvider(),
+//                           child: DeliveryLocationScreen(
+//                             orderId:     order.id,
+//                             isSelecting: false,
+//                           ),
+//                         ),
+//                       ),
+//                     );
+//                   },
+//                   icon: const Icon(Icons.map_outlined, color: Colors.white),
+//                   label: const Text(
+//                     'Track on Map',
+//                     style: TextStyle(
+//                       color: Colors.white,
+//                       fontWeight: FontWeight.w600,
+//                     ),
+//                   ),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: const Color(0xFF2E6CF6),
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(14),
+//                     ),
+//                   ),
+//                 ),
 //               ),
 //             ),
 //

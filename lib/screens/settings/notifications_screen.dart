@@ -30,10 +30,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final notifications = prov.notifications;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Notifications'),
-        backgroundColor: const Color(0xFF161A22),
+        title: Text('Notifications'),
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
         actions: [
           if (notifications.isNotEmpty)
@@ -59,13 +59,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.notifications_none,
-            size: 80, color: Colors.white.withOpacity(0.15)),
+            size: 80, color: Colors.red.withOpacity(0.15)),
         const SizedBox(height: 16),
-        const Text('No notifications yet',
-            style: TextStyle(color: Colors.white54, fontSize: 16)),
+        Text('No notifications yet',
+            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 16)),
         const SizedBox(height: 8),
-        const Text('Order updates and alerts will appear here',
-            style: TextStyle(color: Colors.white38, fontSize: 13)),
+        Text('Order updates and alerts will appear here',
+            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 13)),
       ],
     ),
   );
@@ -81,8 +81,8 @@ class _NotifCard extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: notif.isRead
-          ? const Color(0xFF161A22)
-          : const Color(0xFF1C2333),
+          ? Theme.of(context).cardColor
+          : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(14),
       border: notif.isRead
           ? null
@@ -107,7 +107,7 @@ class _NotifCard extends StatelessWidget {
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
               child: Text(notif.title,
-                  style: const TextStyle(color: Colors.white,
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.w600, fontSize: 14),
                   overflow: TextOverflow.ellipsis),
             ),
@@ -120,97 +120,13 @@ class _NotifCard extends StatelessWidget {
           ]),
           const SizedBox(height: 4),
           Text(notif.body,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 12),
               maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 6),
           Text(notif.timeAgo,
-              style: const TextStyle(color: Colors.white38, fontSize: 11)),
+              style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 11)),
         ]),
       ),
     ]),
   );
 }
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-//
-// import '../../providers/notification_provider.dart';
-//
-// class NotificationsScreen extends StatelessWidget {
-//   const NotificationsScreen({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//
-//     final notificationProvider =
-//     Provider.of<NotificationProvider>(context);
-//
-//     final notifications = notificationProvider.notifications;
-//
-//     return Scaffold(
-//       backgroundColor: const Color(0xFF0F1218),
-//
-//       appBar: AppBar(
-//         title: const Text("Notifications"),
-//         backgroundColor: const Color(0xFF161A22),
-//         elevation: 0,
-//
-//         actions: [
-//           IconButton(
-//             icon: const Icon(Icons.delete_outline),
-//             onPressed: () {
-//               notificationProvider.clearNotifications();
-//             },
-//           )
-//         ],
-//       ),
-//
-//       body: notifications.isEmpty
-//           ? const Center(
-//         child: Text(
-//           "No notifications yet",
-//           style: TextStyle(color: Colors.white70),
-//         ),
-//       )
-//           : ListView.builder(
-//         padding: const EdgeInsets.all(16),
-//         itemCount: notifications.length,
-//         itemBuilder: (context, index) {
-//
-//           final note = notifications[index];
-//
-//           return Container(
-//             margin: const EdgeInsets.only(bottom: 12),
-//             padding: const EdgeInsets.all(16),
-//
-//             decoration: BoxDecoration(
-//               color: const Color(0xFF161A22),
-//               borderRadius: BorderRadius.circular(16),
-//             ),
-//
-//             child: Row(
-//               children: [
-//
-//                 const Icon(
-//                   Icons.notifications,
-//                   color: Color(0xFF2E6CF6),
-//                 ),
-//
-//                 const SizedBox(width: 12),
-//
-//                 Expanded(
-//                   child: Text(
-//                     note,
-//                     style: const TextStyle(color: Colors.white),
-//                   ),
-//                 )
-//               ],
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }

@@ -47,11 +47,11 @@ class _LanguageScreenState extends State<LanguageScreen>
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        title: const Text("Language"),
-        backgroundColor: const Color(0xFF161A22),
+        title: Text("Language"),
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
       ),
 
@@ -77,7 +77,7 @@ class _LanguageScreenState extends State<LanguageScreen>
                   borderRadius: BorderRadius.circular(22),
                 ),
 
-                child: const Row(
+                child: Row(
                   children: [
 
                     Icon(Icons.language,
@@ -104,7 +104,7 @@ class _LanguageScreenState extends State<LanguageScreen>
 
                           Text(
                             "Choose your preferred language for the SmartStock interface.",
-                            style: TextStyle(color: Colors.white70),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                           ),
                         ],
                       ),
@@ -147,13 +147,13 @@ class _LanguageScreenState extends State<LanguageScreen>
       },
 
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: Duration(milliseconds: 250),
 
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 12),
+        padding: EdgeInsets.all(16),
 
         decoration: BoxDecoration(
-          color: const Color(0xFF161A22),
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(18),
 
           border: Border.all(
@@ -167,9 +167,9 @@ class _LanguageScreenState extends State<LanguageScreen>
         child: Row(
           children: [
 
-            Icon(icon, color: const Color(0xFF2E6CF6)),
+            Icon(icon, color: Color(0xFF2E6CF6)),
 
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
 
             Expanded(
               child: Column(
@@ -178,16 +178,16 @@ class _LanguageScreenState extends State<LanguageScreen>
 
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Color(0xFFA1A6B3),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
                 ],

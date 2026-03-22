@@ -47,7 +47,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final total = provider.totalPrice;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       bottomNavigationBar: GlassBottomNavbar(
         currentIndex: 2,
@@ -71,7 +71,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161A22),
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -114,7 +114,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   padding: const EdgeInsets.all(16),
 
                   decoration: BoxDecoration(
-                    color: const Color(0xFF161A22),
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
 
                     border: Border.all(
@@ -144,8 +144,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                             Text(
                               address["name"]!,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -154,8 +154,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                             Text(
                               address["address"]!,
-                              style: const TextStyle(
-                                color: Colors.white70,
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                               ),
                             ),
 
@@ -163,8 +163,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                             Text(
                               "Phone: ${address["phone"]}",
-                              style: const TextStyle(
-                                color: Colors.white54,
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodySmall?.color,
                                 fontSize: 12,
                               ),
                             ),
@@ -172,9 +172,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
 
-                      const Icon(
+                      Icon(
                         Icons.edit_outlined,
-                        color: Colors.white54,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                         size: 18,
                       )
                     ],
@@ -222,7 +222,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 );
               }
             },
-            icon: const Icon(Icons.map_outlined),
+            icon: const Icon(Icons.location_pin),
             label: const Text('Pick on Google Maps'),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF2E6CF6),
@@ -282,10 +282,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildCheckout(cartItems, total) {
 
     if (cartItems.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           "Your cart is empty",
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
         ),
       );
     }
@@ -366,10 +366,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
 
-                    const Text(
+                    Text(
                       "Add Address",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -377,28 +377,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                     const SizedBox(height: 16),
 
-                    const TextField(
+                    TextField(
                       decoration: InputDecoration(
                         hintText: "Name",
-                        hintStyle: TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    const TextField(
+                    TextField(
                       decoration: InputDecoration(
                         hintText: "Address",
-                        hintStyle: TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    const TextField(
+                    TextField(
                       decoration: InputDecoration(
                         hintText: "Phone",
-                        hintStyle: TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
                       ),
                     ),
 
@@ -446,8 +446,8 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: Theme.of(context).textTheme.bodyLarge?.color,
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
@@ -473,7 +473,7 @@ class _CheckoutItemTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
       ),
 
@@ -499,8 +499,8 @@ class _CheckoutItemTile extends StatelessWidget {
 
                 Text(
                   item.product.name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -509,8 +509,8 @@ class _CheckoutItemTile extends StatelessWidget {
 
                 Text(
                   "Qty: ${item.quantity}",
-                  style: const TextStyle(
-                    color: Colors.white54,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                     fontSize: 12,
                   ),
                 ),
@@ -546,12 +546,12 @@ class _AddressCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
       ),
 
       child: Row(
-        children: const [
+        children: [
 
           Icon(
             Icons.location_on_outlined,
@@ -563,13 +563,13 @@ class _AddressCard extends StatelessWidget {
           Expanded(
             child: Text(
               "Surendranagar , Gujarat\nIndia",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
             ),
           ),
 
           Icon(
             Icons.edit_outlined,
-            color: Colors.white54,
+            color: Theme.of(context).textTheme.bodySmall?.color,
             size: 18,
           ),
         ],
@@ -598,28 +598,28 @@ class _OrderSummary extends StatelessWidget {
       padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
       ),
 
       child: Column(
         children: [
 
-          _row("Subtotal", total),
-          _row("Delivery", delivery),
+          _row(context, "Subtotal", total),
+          _row(context, "Delivery", delivery),
 
           const Divider(
             color: Colors.white12,
             height: 20,
           ),
 
-          _row("Total", grandTotal, isBold: true),
+          _row(context, "Total", grandTotal, isBold: true),
         ],
       ),
     );
   }
 
-  Widget _row(String title, double value, {bool isBold = false}) {
+  Widget _row(BuildContext context, String title, double value, {bool isBold = false}) {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -628,7 +628,7 @@ class _OrderSummary extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            color: Colors.white70,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -636,7 +636,7 @@ class _OrderSummary extends StatelessWidget {
         Text(
           "₹${value.toStringAsFixed(0)}",
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -661,8 +661,8 @@ class _CheckoutBottomBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
 
-      decoration: const BoxDecoration(
-        color: Color(0xFF161A22),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(20),
         ),
@@ -710,8 +710,11 @@ class _CheckoutBottomBar extends StatelessWidget {
 // import 'package:provider/provider.dart';
 //
 // import '../../providers/order_draft_provider.dart';
+// import '../../providers/location_provider.dart';
+// import '../../models/location_model.dart';
 // import '../../routes/app_routes.dart';
 // import '../../widgets/glass_bottom_navbar.dart';
+// import '../maps/delivery_location_screen.dart';
 //
 // class CheckoutScreen extends StatefulWidget {
 //   final bool selectAddressMode;
@@ -728,6 +731,7 @@ class _CheckoutBottomBar extends StatelessWidget {
 // class _CheckoutScreenState extends State<CheckoutScreen> {
 //
 //   int selectedAddress = 0;
+//   LocationModel? _selectedMapLocation; // from Google Maps picker
 //
 //   List<Map<String, String>> addresses = [
 //     {
@@ -892,11 +896,41 @@ class _CheckoutBottomBar extends StatelessWidget {
 //         Padding(
 //           padding: const EdgeInsets.symmetric(horizontal: 16),
 //           child: OutlinedButton.icon(
-//             onPressed: () {
-//               _showAddAddressPopup();
+//             onPressed: () async {
+//               // Open Google Maps location picker
+//               final LocationModel? result = await Navigator.push(
+//                 context,
+//                 MaterialPageRoute(
+//                   builder: (_) => ChangeNotifierProvider(
+//                     create: (_) => LocationProvider(),
+//                     child: const DeliveryLocationScreen(isSelecting: true),
+//                   ),
+//                 ),
+//               );
+//               if (result != null && mounted) {
+//                 setState(() {
+//                   _selectedMapLocation = result;
+//                   // Add to addresses list
+//                   addresses.insert(0, {
+//                     'name':    'Map Location',
+//                     'address': result.address,
+//                     'phone':   '',
+//                     'lat':     result.lat.toString(),
+//                     'lng':     result.lng.toString(),
+//                   });
+//                   selectedAddress = 0;
+//                 });
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   const SnackBar(
+//                     content: Text('Delivery location set from map ✅'),
+//                     behavior: SnackBarBehavior.floating,
+//                     backgroundColor: Color(0xFF2E6CF6),
+//                   ),
+//                 );
+//               }
 //             },
-//             icon: const Icon(Icons.add_location_alt_outlined),
-//             label: const Text("Add New Address"),
+//             icon: const Icon(Icons.map_outlined),
+//             label: const Text('Pick on Google Maps'),
 //             style: OutlinedButton.styleFrom(
 //               foregroundColor: const Color(0xFF2E6CF6),
 //               side: const BorderSide(color: Color(0xFF2E6CF6)),
@@ -916,17 +950,16 @@ class _CheckoutBottomBar extends StatelessWidget {
 //           child: SizedBox(
 //             width: double.infinity,
 //             height: 52,
-//
 //             child: ElevatedButton(
 //               onPressed: () {
-//
-//                 Navigator.pushReplacement(
+//                 final address = _selectedMapLocation?.address
+//                     ?? addresses[selectedAddress]['address']
+//                     ?? 'Ahmedabad, Gujarat';
+//                 Navigator.pushReplacementNamed(
 //                   context,
-//                   MaterialPageRoute(
-//                     builder: (_) => const CheckoutScreen(),
-//                   ),
+//                   AppRoutes.payment,
+//                   arguments: address,
 //                 );
-//
 //               },
 //               style: ElevatedButton.styleFrom(
 //                 backgroundColor: const Color(0xFF2E6CF6),

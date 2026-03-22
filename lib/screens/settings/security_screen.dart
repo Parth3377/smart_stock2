@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 class SecurityScreen extends StatelessWidget {
-  const SecurityScreen({super.key});
+  SecurityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        title: const Text("Security Center"),
-        backgroundColor: const Color(0xFF161A22),
+        title: Text("Security Center"),
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
       ),
 
@@ -51,7 +51,7 @@ class SecurityScreen extends StatelessWidget {
 
                   const SizedBox(width: 16),
 
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -70,7 +70,7 @@ class SecurityScreen extends StatelessWidget {
                         Text(
                           "Your data & orders are fully protected.",
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                       ],
@@ -80,14 +80,14 @@ class SecurityScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
 
             /// ================= PROTECTION MODULES =================
 
-            const Text(
+            Text(
               "Protection Modules",
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -95,35 +95,35 @@ class SecurityScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            _moduleCard(
+            _moduleCard(context,
               icon: Icons.lock,
               title: "Account Protection",
               desc:
               "Your account is secured with encrypted authentication and session monitoring.",
             ),
 
-            _moduleCard(
+            _moduleCard(context,
               icon: Icons.shield,
               title: "Transaction Security",
               desc:
               "All inventory purchases are protected with secured billing and encrypted processing.",
             ),
 
-            _moduleCard(
+            _moduleCard(context,
               icon: Icons.devices,
               title: "Device Protection",
               desc:
               "Login activity and devices are monitored continuously to prevent unauthorized access.",
             ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
 
             /// ================= SECURITY UPDATES =================
 
-            const Text(
+            Text(
               "Security Updates",
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -131,21 +131,21 @@ class SecurityScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            _updateCard(
+            _updateCard(context,
               icon: Icons.check_circle,
               title: "Last Scan",
               status: "No threats found",
               color: Colors.green,
             ),
 
-            _updateCard(
+            _updateCard(context,
               icon: Icons.lock,
               title: "System Encryption",
               status: "Active",
               color: const Color(0xFF2E6CF6),
             ),
 
-            _updateCard(
+            _updateCard(context,
               icon: Icons.system_update,
               title: "Security Patch",
               status: "Updated 3 days ago",
@@ -159,18 +159,18 @@ class SecurityScreen extends StatelessWidget {
 
   /// ================= MODULE CARD =================
 
-  Widget _moduleCard({
+  Widget _moduleCard(BuildContext context, {
     required IconData icon,
     required String title,
     required String desc,
   }) {
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
       ),
 
@@ -183,10 +183,10 @@ class SecurityScreen extends StatelessWidget {
               color: const Color(0xFF2E6CF6).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: const Color(0xFF2E6CF6)),
+            child: Icon(icon, color: Color(0xFF2E6CF6)),
           ),
 
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
 
           Expanded(
             child: Column(
@@ -195,18 +195,18 @@ class SecurityScreen extends StatelessWidget {
 
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
 
                 Text(
                   desc,
-                  style: const TextStyle(
-                    color: Color(0xFFA1A6B3),
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                     fontSize: 13,
                   ),
                 )
@@ -220,7 +220,7 @@ class SecurityScreen extends StatelessWidget {
 
   /// ================= UPDATE CARD =================
 
-  Widget _updateCard({
+  Widget _updateCard(BuildContext context, {
     required IconData icon,
     required String title,
     required String status,
@@ -228,11 +228,11 @@ class SecurityScreen extends StatelessWidget {
   }) {
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF161A22),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
 
@@ -241,12 +241,12 @@ class SecurityScreen extends StatelessWidget {
 
           Icon(icon, color: color),
 
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
 
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
             ),
           ),
 

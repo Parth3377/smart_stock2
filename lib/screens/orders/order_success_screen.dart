@@ -57,7 +57,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1218),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       bottomNavigationBar: GlassBottomNavbar(
         currentIndex: 0,
@@ -96,7 +96,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
               margin: const EdgeInsets.symmetric(horizontal: 24),
 
               decoration: BoxDecoration(
-                color: const Color(0xFF161A22),
+                color: Theme.of(context).cardColor,
 
                 borderRadius: BorderRadius.circular(22),
 
@@ -148,10 +148,10 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 24),
 
-                  const Text(
+                  Text(
                     "Order Placed!",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
                     ),
@@ -159,11 +159,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
 
                   const SizedBox(height: 10),
 
-                  const Text(
+                  Text(
                     "Your order has been placed successfully.\nRedirecting to dashboard...",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFFA1A6B3),
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                       fontSize: 13,
                       height: 1.4,
                     ),
@@ -195,7 +195,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       ),
 
                       child: const Text(
-                        "Go to Dashboard",
+                        "Going to Dashboard",
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.black,
