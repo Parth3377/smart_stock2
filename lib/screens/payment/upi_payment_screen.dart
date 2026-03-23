@@ -1,7 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-//  lib/screens/payment/upi_payment_screen.dart
-// ════════════════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -167,7 +163,7 @@ class _UpiPaymentScreenState extends State<UpiPaymentScreen>
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black12),
                     ),
                     child: TextField(
                       controller: _upiController,
@@ -210,7 +206,7 @@ class _UpiPaymentScreenState extends State<UpiPaymentScreen>
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black12),
                     ),
                     child: Row(children: [
                       Container(
@@ -318,7 +314,7 @@ class _UpiPaymentScreenState extends State<UpiPaymentScreen>
             const SizedBox(height: 6),
             Text(name,
                 style: TextStyle(
-                  color: selected ? color : Colors.white70,
+                  color: selected ? color : Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 12,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                 )),
@@ -328,7 +324,6 @@ class _UpiPaymentScreenState extends State<UpiPaymentScreen>
     );
   }
 }
-
 
 
 // import 'package:flutter/material.dart';

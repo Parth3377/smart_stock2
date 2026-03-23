@@ -1,10 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-//  lib/screens/payment/payment_screen.dart
-//
-//  FIX: Navigates to Order Success INSTANTLY — no freeze.
-//  Firestore save happens in background after navigation.
-// ════════════════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +79,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   _summaryRow('Subtotal', '₹${subtotal.toStringAsFixed(0)}'),
                   const SizedBox(height: 8),
                   _summaryRow('Delivery',  '₹${delivery.toStringAsFixed(0)}'),
-                  const Divider(color: Colors.white12, height: 20),
+                  Divider(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black12, height: 20),
                   _summaryRow('Total', '₹${total.toStringAsFixed(0)}',
                       isBold: true, color: const Color(0xFF2E6CF6)),
                 ]),
@@ -206,7 +199,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             fontSize: isBold ? 15 : 13,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
         Text(value, style: TextStyle(
-            color: color ?? (isBold ? Colors.white : Colors.white70),
+            color: color ?? (isBold ? Theme.of(context).textTheme.bodyLarge?.color : Theme.of(context).textTheme.bodyMedium?.color),
             fontSize: isBold ? 16 : 13,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
       ],
@@ -226,7 +219,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: selected ? const Color(0xFF2E6CF6) : Colors.white12,
+              color: selected
+                  ? const Color(0xFF2E6CF6)
+                  : Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white12
+                      : Colors.black12,
               width: 1.5),
         ),
         child: Row(children: [
@@ -242,7 +239,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: TextStyle(
-                  color: selected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+                  color: selected ? const Color(0xFF2E6CF6) : Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 15, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text(subtitle, style: TextStyle(

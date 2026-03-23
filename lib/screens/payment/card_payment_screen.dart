@@ -1,7 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-//  lib/screens/payment/card_payment_screen.dart
-// ════════════════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -214,7 +210,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
                           Column(crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('CARD HOLDER',
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 9)),
+                                    style: TextStyle(color: Colors.white70, fontSize: 9)),
                                 const SizedBox(height: 2),
                                 Text(_displayName,
                                     style: TextStyle(
@@ -224,7 +220,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
                           Column(crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text('EXPIRES',
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 9)),
+                                    style: TextStyle(color: Colors.white70, fontSize: 9)),
                                 const SizedBox(height: 2),
                                 Text(_displayExpiry,
                                     style: const TextStyle(
@@ -287,7 +283,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
                         onTap: () => setState(() => _showCvv = !_showCvv),
                         child: Icon(
                           _showCvv ? Icons.visibility_off : Icons.visibility,
-                          color: Theme.of(context).textTheme.bodyMedium?.color, size: 18,
+                          color: Theme.of(context).textTheme.bodySmall?.color, size: 18,
                         ),
                       ),
                     ),
@@ -305,7 +301,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.black12),
                     ),
                     child: Row(children: [
                       AnimatedContainer(
@@ -407,9 +403,11 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Theme.of(context).cardColor
+            : const Color(0xFFF8F9FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : const Color(0xFFDDE1EA)),
       ),
       child: TextField(
         controller: ctrl,
@@ -420,10 +418,19 @@ class _CardPaymentScreenState extends State<CardPaymentScreen>
         style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 14),
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.white30, fontSize: 13),
+          hintText: hint.isNotEmpty ? hint : label,
+          hintStyle: TextStyle(color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white38
+              : const Color(0xFF9CA3AF),
+              fontSize: 13
+          ),
           labelText: label,
-          labelStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 12),
+          labelStyle: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white60
+                  : const Color(0xFF6B7280),
+              fontSize: 12,
+          ),
           prefixIcon: icon != null
               ? Icon(icon, color: const Color(0xFF2E6CF6), size: 20)
               : null,
