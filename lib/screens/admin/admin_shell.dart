@@ -6,6 +6,7 @@ import 'package:smart_stock2/screens/sales/admin_sales_screen.dart';
 import 'package:smart_stock2/screens/stock_transfer/admin_stock_transfer_screen.dart';
 import 'package:smart_stock2/screens/suppliers/admin_supplier_screen.dart';
 import '../../providers/admin_providers.dart';
+import '../../providers/admin_notification_provider.dart';
 import 'widgets/admin_widgets.dart';
 import '../purchase/admin_purchase_screen.dart';
 import '../reports/admin_reports_screen.dart';
@@ -40,13 +41,15 @@ class _AdminShellState extends State<AdminShell>
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeIn);
     _fadeCtrl.forward();
 
-    // Preload all admin data
+    // Preload all admin data + start notification stream
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminDashboardProvider>().load();
       context.read<AdminProductsProvider>().load();
       context.read<AdminOrdersProvider>().load();
       context.read<AdminSuppliersProvider>().load();
       context.read<AdminTransferProvider>().load();
+      // 🔔 Start streaming admin notifications
+      context.read<AdminNotificationProvider>().startListening();
     });
   }
 
@@ -348,14 +351,38 @@ class _AdminTopBar extends StatelessWidget {
           const SizedBox(width: 12),
 
           // Notification bell
-          Stack(children: [
-            _TopBarBtn(icon: Icons.notifications_outlined, onTap: () {}),
-            Positioned(top: 7, right: 7, child: Container(
-              width: 7, height: 7,
-              decoration: const BoxDecoration(
-                  color: Color(0xFFEF4444), shape: BoxShape.circle),
-            )),
-          ]),
+          // 🔔 Live notification bell — badge count from Firestore stream
+          Consumer<AdminNotificationProvider>(
+            builder: (ctx, notifProv, _) => Stack(children: [
+              _TopBarBtn(
+                icon: Icons.notifications_outlined,
+                onTap: () => _showNotifPanel(ctx, notifProv, onNavigate),
+              ),
+              if (notifProv.hasUnread)
+                Positioned(
+                  top: 5, right: 5,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      notifProv.unreadCount > 99
+                          ? '99+'
+                          : '${notifProv.unreadCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ]),
+          ),
           const SizedBox(width: 8),
 
           // Settings → profile
@@ -369,6 +396,221 @@ class _AdminTopBar extends StatelessWidget {
         ]),
       );
     });
+  }
+}
+
+// ── Notification panel helper ─────────────────────────────────────
+void _showNotifPanel(
+    BuildContext context,
+    AdminNotificationProvider notifProv,
+    Function(int) onNavigate,
+    ) {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black38,
+    builder: (_) => Stack(
+      children: [
+        Positioned(
+          top: 68, right: 56,
+          child: Material(
+            color: Colors.transparent,
+            child: _NotifDropdown(
+              notifProv:  notifProv,
+              onNavigate: onNavigate,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ── Notification Dropdown Panel ───────────────────────────────────
+class _NotifDropdown extends StatelessWidget {
+  final AdminNotificationProvider notifProv;
+  final Function(int) onNavigate;
+
+  static const Map<String, int> _screenIndex = {
+    'dashboard':     0,
+    'products':      1,
+    'sales':         2,
+    'purchase':      3,
+    'suppliers':     4,
+    'stock_transfer':5,
+    'reports':       6,
+    'profile':       7,
+    'customers':     8,
+  };
+
+  const _NotifDropdown({
+    required this.notifProv,
+    required this.onNavigate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final notifs = notifProv.all;
+    return Container(
+      width:  380,
+      constraints: const BoxConstraints(maxHeight: 480),
+      decoration: BoxDecoration(
+        color: ACol.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ACol.border2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Header ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 12, 10),
+            child: Row(children: [
+              const Text('Notifications',
+                  style: TextStyle(
+                      color: ACol.text1,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700)),
+              if (notifProv.hasUnread) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${notifProv.unreadCount} new',
+                    style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+              const Spacer(),
+              if (notifProv.hasUnread)
+                TextButton(
+                  onPressed: () {
+                    notifProv.markAllRead();
+                    Navigator.pop(context);
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text('Mark all read',
+                      style: TextStyle(color: ACol.blue, fontSize: 11.5)),
+                ),
+            ]),
+          ),
+
+          const Divider(color: ACol.border, height: 1),
+
+          // ── Notification list ──
+          if (notifs.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Column(children: [
+                Icon(Icons.notifications_none_rounded,
+                    color: ACol.text3, size: 32),
+                SizedBox(height: 8),
+                Text('No notifications yet',
+                    style: TextStyle(color: ACol.text3, fontSize: 13)),
+              ]),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                itemCount: notifs.length > 20 ? 20 : notifs.length,
+                separatorBuilder: (_, __) =>
+                const Divider(color: ACol.border, height: 1),
+                itemBuilder: (ctx, i) {
+                  final n = notifs[i];
+                  return InkWell(
+                    onTap: () {
+                      notifProv.markRead(n.id);
+                      Navigator.pop(context);
+                      final idx = _screenIndex[n.screen] ?? 0;
+                      onNavigate(idx);
+                    },
+                    child: Container(
+                      color: n.isRead
+                          ? Colors.transparent
+                          : ACol.blue.withOpacity(0.04),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Icon circle
+                          Container(
+                            width: 36, height: 36,
+                            decoration: BoxDecoration(
+                              color: n.color.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(n.icon, color: n.color, size: 17),
+                          ),
+                          const SizedBox(width: 12),
+                          // Text
+                          Expanded(child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                  child: Text(n.title,
+                                      style: TextStyle(
+                                        color: n.isRead
+                                            ? ACol.text2
+                                            : ACol.text1,
+                                        fontSize: 12.5,
+                                        fontWeight: n.isRead
+                                            ? FontWeight.w400
+                                            : FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                                if (!n.isRead)
+                                  Container(
+                                    width: 6, height: 6,
+                                    decoration: const BoxDecoration(
+                                        color: Color(0xFF2E6CF6),
+                                        shape: BoxShape.circle),
+                                  ),
+                              ]),
+                              const SizedBox(height: 3),
+                              Text(n.body,
+                                  style: const TextStyle(
+                                      color: ACol.text3, fontSize: 11.5),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 4),
+                              Text(n.timeAgo,
+                                  style: const TextStyle(
+                                      color: ACol.text3, fontSize: 10.5)),
+                            ],
+                          )),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 

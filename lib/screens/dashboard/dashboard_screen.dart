@@ -1,18 +1,6 @@
-// ════════════════════════════════════════════════════════════════════
-//  lib/screens/dashboard/dashboard_screen.dart
-//
-//  Connected to Firebase Auth + Firestore:
-//  ✅ Real user name from Firebase Auth
-//  ✅ My Orders count from Firestore stream
-//  ✅ Notification bell with unread badge → opens Notifications
-//  ✅ Products from ProductService (Firestore or local)
-// ════════════════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../widgets/cart_badge.dart';
 import '../../models/product_model.dart';
 import '../../providers/order_draft_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -88,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // ── HEADER ───────────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(25),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFF0B3C5D), Color(0xFF2E6CF6)],
@@ -464,7 +452,7 @@ class _ProductCardState extends State<_ProductCard> {
                       child: Icon(
                         isFav ? Icons.favorite : Icons.favorite_border,
                         color: isFav ? Colors.red : Colors.white,
-                        size: 14,
+                        size: 23,
                       ),
                     ),
                   ),
@@ -492,7 +480,7 @@ class _ProductCardState extends State<_ProductCard> {
                       borderRadius: BorderRadius.circular(7)),
                 ),
                 child: const Text('+ Add', style: TextStyle(
-                    fontSize: 10, fontWeight: FontWeight.w900,
+                    fontSize: 14, fontWeight: FontWeight.w900,
                     color: Colors.black)),
               ),
             ),

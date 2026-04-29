@@ -14,15 +14,6 @@ import '../customers/admin_customers_screen.dart';
 import '../analytics/revenue_analytics_screen.dart';
 import '../../providers/admin_providers.dart';
 
-// ═══════════════════════════════════════════════════════════════════
-//  AdminDashboardScreen  —  Main Shell
-//
-//  Page index map:
-//   0 = Dashboard        1 = Products      2 = Sales
-//   3 = Purchase         4 = Suppliers     5 = Stock Transfer
-//   6 = Reports          7 = Profile       8 = Customers
-//   9 = Revenue Analytics (sub-page, no sidebar item)
-// ═══════════════════════════════════════════════════════════════════
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});

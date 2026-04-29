@@ -182,7 +182,7 @@ class _FavoriteCardState extends State<_FavoriteCard> {
                         child: Icon(
                           isFav ? Icons.favorite : Icons.favorite_border,
                           color: isFav ? Colors.red : Colors.white,
-                          size: 14,
+                          size: 21,
                         ),
                       ),
                     ),
@@ -220,6 +220,7 @@ class _FavoriteCardState extends State<_FavoriteCard> {
     );
   }
 }
+
 
 // ── Delete all favorites dialog ────────────────────────────────────
 void _showDeleteFavoritesPopup(BuildContext context) {

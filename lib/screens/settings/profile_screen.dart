@@ -1,12 +1,3 @@
-// ════════════════════════════════════════════════════════════════════
-//  lib/screens/settings/profile_screen.dart
-//
-//  ✅ Real name + email from Firebase Auth
-//  ✅ Initials avatar: "Parth Chauhan" → "PC"
-//  ✅ Logout works via Firebase Auth
-//  ✅ Notifications tile opens NotificationsScreen
-// ════════════════════════════════════════════════════════════════════
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -148,10 +139,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          _tile(Icons.language_outlined, 'Language',
-                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => LanguageScreen()))),
-
-          const SizedBox(height: 20),
+          // _tile(Icons.language_outlined, 'Language',
+          //         () => Navigator.push(context, MaterialPageRoute(builder: (_) => LanguageScreen()))),
+          //
+          // const SizedBox(height: 20),
 
           // ── SUPPORT ───────────────────────────────────────────────
           _sectionTitle('Support'),

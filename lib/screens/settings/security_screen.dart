@@ -42,9 +42,9 @@ class SecurityScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.security,
-                      color: Colors.white,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                       size: 34,
                     ),
                   ),

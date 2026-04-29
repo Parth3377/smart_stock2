@@ -11,6 +11,7 @@ import '../screens/orders/order_success_screen.dart';
 import '../screens/orders/order_list_screen.dart';
 import '../screens/settings/profile_screen.dart';
 import '../screens/admin/admin_shell.dart';
+import '../screens/favorites/favorites_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -28,6 +29,7 @@ class AppRoutes {
   static const String profile        = '/profile';
   static const String orders         = '/orders';
   static const String settings       = '/settings';
+  static const String favorites = '/favorites';
 
   // ... keep all your other route names exactly as they were
 
